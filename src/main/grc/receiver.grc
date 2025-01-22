@@ -1,0 +1,996 @@
+options:
+  parameters:
+    author: Defective4
+    catch_exceptions: 'True'
+    category: '[GRC Hier Blocks]'
+    cmake_opt: ''
+    comment: ''
+    copyright: ''
+    description: ''
+    gen_cmake: 'On'
+    gen_linking: dynamic
+    generate_options: no_gui
+    hier_block_src_path: '.:'
+    id: receiver
+    max_nouts: '0'
+    output_language: python
+    placement: (0,0)
+    qt_qss_theme: ''
+    realtime_scheduling: ''
+    run: 'True'
+    run_command: '{python} -u {filename}'
+    run_options: run
+    sizing_mode: fixed
+    thread_safe_setters: ''
+    title: Pi Radio Receiver
+    window_size: (1000,1000)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 8.0]
+    rotation: 0
+    state: enabled
+
+blocks:
+- name: center_freq
+  id: variable
+  parameters:
+    comment: adjustable
+    value: 87e6
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [832, 8.0]
+    rotation: 0
+    state: true
+- name: decimation_1
+  id: variable
+  parameters:
+    comment: ''
+    value: '5'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [280, 8.0]
+    rotation: 0
+    state: true
+- name: decimation_2
+  id: variable
+  parameters:
+    comment: ''
+    value: '10'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [384, 8.0]
+    rotation: 0
+    state: true
+- name: deemp
+  id: variable
+  parameters:
+    comment: adjustable
+    value: '0.00005'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [488, 8.0]
+    rotation: 0
+    state: true
+- name: demod
+  id: variable
+  parameters:
+    comment: 'adjustable
+
+      0 = AM
+
+      1 = FM
+
+      2 = NFM'
+    value: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [928, 8.0]
+    rotation: 0
+    state: true
+- name: demod_freq
+  id: variable
+  parameters:
+    comment: adjustable
+    value: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [560, 8.0]
+    rotation: 0
+    state: true
+- name: enable_rds
+  id: variable
+  parameters:
+    comment: adjustable
+    value: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [744, 8.0]
+    rotation: 0
+    state: true
+- name: fm_stereo
+  id: variable
+  parameters:
+    comment: adjustable
+    value: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [656, 8.0]
+    rotation: 0
+    state: true
+- name: gain
+  id: variable
+  parameters:
+    comment: adjustable
+    value: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1000, 8.0]
+    rotation: 0
+    state: true
+- name: rrc_taps
+  id: variable_rrc_filter_taps
+  parameters:
+    alpha: '1.0'
+    comment: ''
+    gain: '1.0'
+    ntaps: '151'
+    samp_rate: '19000'
+    sym_rate: 19000/8
+    value: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [648, 552.0]
+    rotation: 0
+    state: true
+- name: rrc_taps_manchester
+  id: variable
+  parameters:
+    comment: ''
+    value: '[rrc_taps[n] - rrc_taps[n+8] for n in range(len(rrc_taps)-8)]'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [648, 480.0]
+    rotation: 0
+    state: true
+- name: samp_rate
+  id: variable
+  parameters:
+    comment: ''
+    value: '2400000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [192, 8.0]
+    rotation: 0
+    state: enabled
+- name: analog_agc3_xx_0
+  id: analog_agc3_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    attack_rate: 1e-3
+    comment: ''
+    decay_rate: 1e-4
+    gain: '1.0'
+    iir_update_decim: '1'
+    max_gain: '65536'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    reference: '1.0'
+    type: complex
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1664, 24.0]
+    rotation: 0
+    state: true
+- name: analog_agc_xx_0
+  id: analog_agc_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    gain: '53'
+    max_gain: '1000'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    rate: 2e-3
+    reference: '0.585'
+    type: complex
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [688, 688.0]
+    rotation: 180
+    state: true
+- name: analog_am_demod_cf_0
+  id: analog_am_demod_cf
+  parameters:
+    affinity: ''
+    alias: ''
+    audio_decim: '1'
+    audio_pass: 6e3
+    audio_stop: 8e3
+    chan_rate: samp_rate/decimation_1/decimation_2
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1872.0, 256]
+    rotation: 270
+    state: true
+- name: analog_fm_deemph_0
+  id: analog_fm_deemph
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: samp_rate/decimation_1/decimation_2
+    tau: deemp
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1608.0, 248]
+    rotation: 270
+    state: true
+- name: analog_nbfm_rx_0
+  id: analog_nbfm_rx
+  parameters:
+    affinity: ''
+    alias: ''
+    audio_rate: '48000'
+    comment: ''
+    max_dev: 5e3
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    quad_rate: '48000'
+    tau: deemp
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1696.0, 248]
+    rotation: 270
+    state: true
+- name: analog_pll_carriertracking_cc_0
+  id: analog_pll_carriertracking_cc
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    max_freq: -654e-4
+    maxoutbuf: '0'
+    min_freq: 654e-4
+    minoutbuf: '0'
+    w: 5e-2
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1888, 48.0]
+    rotation: 0
+    state: true
+- name: analog_quadrature_demod_cf_0
+  id: analog_quadrature_demod_cf
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    gain: (samp_rate / decimation_1) / (2*math.pi*75000)
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [744, 360.0]
+    rotation: 180
+    state: true
+- name: analog_wfm_rcv_0
+  id: analog_wfm_rcv
+  parameters:
+    affinity: ''
+    alias: ''
+    audio_decimation: decimation_2
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    quad_rate: samp_rate/decimation_1
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1368, 240.0]
+    rotation: 0
+    state: enabled
+- name: analog_wfm_rcv_pll_0
+  id: analog_wfm_rcv_pll
+  parameters:
+    affinity: ''
+    alias: ''
+    audio_decimation: decimation_2
+    comment: ''
+    deemph_tau: deemp
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    quad_rate: samp_rate/decimation_1
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1368, 312.0]
+    rotation: 0
+    state: true
+- name: audio_sink_0
+  id: audio_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: 'NOTE:
+
+      Only WBFM Receive PLL
+
+      outputs true stereo'
+    device_name: ''
+    num_inputs: '2'
+    ok_to_block: 'True'
+    samp_rate: '48000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1168, 448.0]
+    rotation: 180
+    state: true
+- name: blocks_file_source_0
+  id: blocks_file_source
+  parameters:
+    affinity: ''
+    alias: ''
+    begin_tag: pmt.PMT_NIL
+    comment: ''
+    file: /home/defective/recording.cfile
+    length: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    offset: '0'
+    repeat: 'True'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 160.0]
+    rotation: 0
+    state: true
+- name: blocks_multiply_const_vxx_0
+  id: blocks_multiply_const_vxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    const: 3e-1
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1704, 592.0]
+    rotation: 180
+    state: true
+- name: blocks_multiply_const_vxx_0_0
+  id: blocks_multiply_const_vxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    const: 5e-1
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1704, 488.0]
+    rotation: 180
+    state: true
+- name: blocks_selector_0
+  id: blocks_selector
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    enabled: enable_rds == 1
+    input_index: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '1'
+    num_outputs: '1'
+    output_index: '0'
+    showports: 'True'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [920, 328.0]
+    rotation: 180
+    state: true
+- name: blocks_selector_0_0
+  id: blocks_selector
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    enabled: 'True'
+    input_index: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '1'
+    num_outputs: '2'
+    output_index: 1 if fm_stereo == 1 else 0
+    showports: 'True'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1160, 256.0]
+    rotation: 0
+    state: true
+- name: blocks_selector_0_0_0
+  id: blocks_selector
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    enabled: 'True'
+    input_index: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '1'
+    num_outputs: '2'
+    output_index: 0 if demod == 0 or demod == 2 else 1
+    showports: 'True'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [920, 176.0]
+    rotation: 0
+    state: true
+- name: blocks_selector_1
+  id: blocks_selector
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    enabled: 'True'
+    input_index: 2 if demod == 0 else 3 if demod == 2 else 1 if fm_stereo == 1 else
+      0
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '4'
+    num_outputs: '1'
+    output_index: '0'
+    showports: 'True'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1368, 400.0]
+    rotation: 180
+    state: true
+- name: blocks_selector_1_0
+  id: blocks_selector
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    enabled: 'True'
+    input_index: 2 if demod == 0 else 3 if demod == 2 else 1 if fm_stereo == 1 else
+      0
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '4'
+    num_outputs: '1'
+    output_index: '0'
+    showports: 'True'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1368, 536.0]
+    rotation: 180
+    state: true
+- name: blocks_selector_2
+  id: blocks_selector
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    enabled: 'True'
+    input_index: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '1'
+    num_outputs: '2'
+    output_index: 0 if demod == 0 else 1
+    showports: 'True'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1368, 48.0]
+    rotation: 0
+    state: true
+- name: blocks_throttle_0
+  id: blocks_throttle
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    ignoretag: 'True'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samples_per_second: samp_rate
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [224, 192.0]
+    rotation: 0
+    state: true
+- name: cmd_addr
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: Command server address
+    short_id: a
+    type: str
+    value: tcp://localhost:55555
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 280.0]
+    rotation: 0
+    state: true
+- name: digital_constellation_receiver_cb_0
+  id: digital_constellation_receiver_cb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    constellation: digital.constellation_bpsk().base()
+    fmax: '0.002'
+    fmin: '-0.002'
+    loop_bw: 2*math.pi / 100
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    showports: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1016, 800.0]
+    rotation: 0
+    state: true
+- name: digital_diff_decoder_bb_0
+  id: digital_diff_decoder_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    coding: digital.DIFF_DIFFERENTIAL
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    modulus: '2'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1096, 984.0]
+    rotation: 180
+    state: enabled
+- name: digital_symbol_sync_xx_0
+  id: digital_symbol_sync_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    constellation: digital.constellation_bpsk().base()
+    damping: '1.0'
+    loop_bw: '0.01'
+    max_dev: '0.1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    nfilters: '128'
+    osps: '1'
+    pfb_mf_taps: '[]'
+    resamp_type: digital.IR_MMSE_8TAP
+    sps: '16'
+    ted_gain: '1.0'
+    ted_type: digital.TED_ZERO_CROSSING
+    type: cc
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [688, 796.0]
+    rotation: 0
+    state: true
+- name: epy_block_0
+  id: epy_block
+  parameters:
+    _source_code: "import pmt\nfrom gnuradio import gr\n\n\nclass blk(gr.sync_block):\n\
+      \n    def __init__(self):\n        gr.sync_block.__init__(\n            self,\n\
+      \            name='Message to Command',\n            in_sig=None,\n        \
+      \    out_sig=None\n        )\n\n        self.message_port_register_in(pmt.intern(\"\
+      inpair\"))\n        self.set_msg_handler(pmt.intern(\"inpair\"), self.msg_handler)\n\
+      \n    def init_callbacks(self, demod, demod_freq, enable_rds, fm_stereo, deemp,\
+      \ gain, center_freq):\n        self.callbacks = {\n            \"demod\": demod,\n\
+      \            \"demod_freq\": demod_freq,\n            \"enable_rds\": enable_rds,\n\
+      \            \"fm_stereo\": fm_stereo,\n            \"deemp\": deemp,\n    \
+      \        \"gain\": gain,\n            \"center_freq\": center_freq\n       \
+      \ }\n\n    def msg_handler(self, msg):\n        if not pmt.is_pair(msg) or pmt.is_dict(msg)\
+      \ or pmt.is_pdu(msg):\n            gr.log.warn(\n                \"Input message\
+      \ %s is not a simple pair, dropping\" % repr(msg))\n            return\n\n \
+      \       val = pmt.to_python(pmt.cdr(msg))\n        key = pmt.to_python(pmt.car(msg))\n\
+      \        self.callbacks[key](val)\n\n    def stop(self):\n        return True\n"
+    affinity: ''
+    alias: ''
+    comment: 'Handle commands
+
+      received from the controller'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    _io_cache: ('Message to Command', 'blk', [], [('inpair', 'message', 1)], [], '',
+      [])
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [240, 440.0]
+    rotation: 0
+    state: true
+- name: fir_filter_xxx_2
+  id: fir_filter_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    decim: '1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_delay: '0'
+    taps: rrc_taps_manchester
+    type: ccc
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [864, 704.0]
+    rotation: 180
+    state: enabled
+- name: freq_xlating_fir_filter_xxx_0
+  id: freq_xlating_fir_filter_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    center_freq: demod_freq
+    comment: ''
+    decim: decimation_1
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: samp_rate
+    taps: firdes.complex_band_pass(1, samp_rate, -samp_rate/(2*decimation_1), samp_rate/(2*decimation_1),
+      150e3)
+    type: ccc
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [704, 184.0]
+    rotation: 0
+    state: true
+- name: freq_xlating_fir_filter_xxx_1_0
+  id: freq_xlating_fir_filter_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    center_freq: 57e3
+    comment: ''
+    decim: '10'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: samp_rate / decimation_1
+    taps: firdes.low_pass(1.0, samp_rate / decimation_1, 7.5e3, 5e3)
+    type: fcc
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [888, 448.0]
+    rotation: 0
+    state: enabled
+- name: low_pass_filter_0
+  id: low_pass_filter
+  parameters:
+    affinity: ''
+    alias: ''
+    beta: '6.76'
+    comment: ''
+    cutoff_freq: 6e3
+    decim: decimation_2
+    gain: '1'
+    interp: '1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: samp_rate/decimation_1
+    type: fir_filter_ccf
+    width: 2e3
+    win: window.WIN_HAMMING
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1160, 28.0]
+    rotation: 0
+    state: true
+- name: network_tcp_sink_0
+  id: network_tcp_sink
+  parameters:
+    addr: 127.0.0.1
+    affinity: ''
+    alias: ''
+    comment: ''
+    mode: '1'
+    port: resampler_server
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1176, 656.0]
+    rotation: 180
+    state: true
+- name: rational_resampler_xxx_1
+  id: rational_resampler_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    decim: samp_rate // decimation_1 // 10
+    fbw: '0'
+    interp: '19000'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    taps: '[]'
+    type: ccc
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1064.0, 560]
+    rotation: 270
+    state: true
+- name: rds_addr
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: RDS server address
+    short_id: r
+    type: str
+    value: tcp://localhost:55556
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 496.0]
+    rotation: 0
+    state: true
+- name: rds_decoder_0
+  id: rds_decoder
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    debug: 'False'
+    log: 'False'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [848, 984.0]
+    rotation: 180
+    state: true
+- name: rds_parser_0
+  id: rds_parser
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    debug: 'False'
+    log: 'False'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    pty_locale: '0'
+    reset: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [672, 976.0]
+    rotation: 180
+    state: true
+- name: resampler_server
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: APRS Resampler Server Port
+    short_id: p
+    type: intx
+    value: '2000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 688.0]
+    rotation: 0
+    state: true
+- name: snippet_0
+  id: snippet
+  parameters:
+    alias: ''
+    code: self.epy_block_0.init_callbacks(self.set_demod, self.set_demod_freq, self.set_enable_rds,
+      self.set_fm_stereo, self.set_deemp, self.set_gain, self.set_center_freq)
+    comment: Initialize command callbacks
+    priority: '0'
+    section: main_after_init
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [240, 328.0]
+    rotation: 0
+    state: true
+- name: zeromq_pull_msg_source_0
+  id: zeromq_pull_msg_source
+  parameters:
+    address: cmd_addr
+    affinity: ''
+    alias: ''
+    bind: 'False'
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    timeout: '100'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 424.0]
+    rotation: 0
+    state: true
+- name: zeromq_push_msg_sink_0
+  id: zeromq_push_msg_sink
+  parameters:
+    address: rds_addr
+    affinity: ''
+    alias: ''
+    bind: 'False'
+    comment: ''
+    timeout: '100'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 616.0]
+    rotation: 180
+    state: true
+
+connections:
+- [analog_agc3_xx_0, '0', analog_pll_carriertracking_cc_0, '0']
+- [analog_agc_xx_0, '0', digital_symbol_sync_xx_0, '0']
+- [analog_am_demod_cf_0, '0', blocks_multiply_const_vxx_0, '0']
+- [analog_fm_deemph_0, '0', blocks_selector_1, '0']
+- [analog_fm_deemph_0, '0', blocks_selector_1_0, '0']
+- [analog_nbfm_rx_0, '0', blocks_multiply_const_vxx_0_0, '0']
+- [analog_pll_carriertracking_cc_0, '0', analog_am_demod_cf_0, '0']
+- [analog_quadrature_demod_cf_0, '0', freq_xlating_fir_filter_xxx_1_0, '0']
+- [analog_wfm_rcv_0, '0', analog_fm_deemph_0, '0']
+- [analog_wfm_rcv_pll_0, '0', blocks_selector_1, '1']
+- [analog_wfm_rcv_pll_0, '1', blocks_selector_1_0, '1']
+- [blocks_file_source_0, '0', blocks_throttle_0, '0']
+- [blocks_multiply_const_vxx_0, '0', blocks_selector_1, '2']
+- [blocks_multiply_const_vxx_0, '0', blocks_selector_1_0, '2']
+- [blocks_multiply_const_vxx_0_0, '0', blocks_selector_1, '3']
+- [blocks_multiply_const_vxx_0_0, '0', blocks_selector_1_0, '3']
+- [blocks_selector_0, '0', analog_quadrature_demod_cf_0, '0']
+- [blocks_selector_0_0, '0', analog_wfm_rcv_0, '0']
+- [blocks_selector_0_0, '1', analog_wfm_rcv_pll_0, '0']
+- [blocks_selector_0_0_0, '0', low_pass_filter_0, '0']
+- [blocks_selector_0_0_0, '1', blocks_selector_0, '0']
+- [blocks_selector_0_0_0, '1', blocks_selector_0_0, '0']
+- [blocks_selector_1, '0', audio_sink_0, '0']
+- [blocks_selector_1_0, '0', audio_sink_0, '1']
+- [blocks_selector_1_0, '0', network_tcp_sink_0, '0']
+- [blocks_selector_2, '0', analog_agc3_xx_0, '0']
+- [blocks_selector_2, '1', analog_nbfm_rx_0, '0']
+- [blocks_throttle_0, '0', freq_xlating_fir_filter_xxx_0, '0']
+- [digital_constellation_receiver_cb_0, '0', digital_diff_decoder_bb_0, '0']
+- [digital_diff_decoder_bb_0, '0', rds_decoder_0, '0']
+- [digital_symbol_sync_xx_0, '0', digital_constellation_receiver_cb_0, '0']
+- [fir_filter_xxx_2, '0', analog_agc_xx_0, '0']
+- [freq_xlating_fir_filter_xxx_0, '0', blocks_selector_0_0_0, '0']
+- [freq_xlating_fir_filter_xxx_1_0, '0', rational_resampler_xxx_1, '0']
+- [low_pass_filter_0, '0', blocks_selector_2, '0']
+- [rational_resampler_xxx_1, '0', fir_filter_xxx_2, '0']
+- [rds_decoder_0, out, rds_parser_0, in]
+- [rds_parser_0, out, zeromq_push_msg_sink_0, in]
+- [zeromq_pull_msg_source_0, out, epy_block_0, inpair]
+
+metadata:
+  file_format: 1
+  grc_version: 3.10.5.1
