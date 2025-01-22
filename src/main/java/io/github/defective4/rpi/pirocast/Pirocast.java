@@ -4,15 +4,19 @@ import static io.github.defective4.rpi.pirocast.ApplicationState.*;
 
 import java.awt.Window;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import io.github.defective4.rpi.pirocast.display.SwingLcdDisplayEmulator;
 import io.github.defective4.rpi.pirocast.display.TextDisplay;
+import io.github.defective4.rpi.pirocast.ext.RadioReceiver;
 import io.github.defective4.rpi.pirocast.input.Button;
 import io.github.defective4.rpi.pirocast.input.InputAdapter;
 import io.github.defective4.rpi.pirocast.input.InputManager;
 import io.github.defective4.rpi.pirocast.input.SwingInputManager;
+import io.github.defective4.rpi.pirocast.props.AppProperties;
 import io.github.defective4.rpi.pirocast.settings.Setting;
 
 public class Pirocast {
@@ -23,12 +27,18 @@ public class Pirocast {
     private final TextDisplay display;
     private final InputManager inputManager;
     private float offsetFrequency = 0;
+    private final AppProperties properties;
+    private final RadioReceiver receiver;
     private int settingIndex = 0;
     private ApplicationState state = OFF;
 
-    public Pirocast(List<Band> bands) {
+    public Pirocast(List<Band> bands, AppProperties properties) {
         if (bands.isEmpty()) throw new IllegalArgumentException("Band list cannot be empty");
+        Objects.requireNonNull(properties);
         this.bands = bands;
+        this.properties = properties;
+        receiver = new RadioReceiver(properties.getControllerPort(), properties.getReceiverExecutablePath());
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> receiver.stop()));
         centerFrequency = bands.get(0).getDefaultFreq();
         display = new SwingLcdDisplayEmulator(16, 2); // TODO configuration
         inputManager = new SwingInputManager((Window) display, 500, KeyEvent.VK_LEFT, KeyEvent.VK_ENTER,
@@ -124,18 +134,25 @@ public class Pirocast {
         } else {
             offsetFrequency = freq - centerFrequency;
         }
+        receiver.setDemodFrequency(offsetFrequency);
+        receiver.setCenterFrequency(centerFrequency);
         updateDisplay();
     }
 
-    public void start() {
+    public void start() throws IOException {
         display.setDisplayBacklight(true);
         state = MAIN;
-        setFrequency(getCurrentBand().getLastFrequency());
+        receiver.start();
+
+        Band band = getCurrentBand();
+        receiver.initDefaultSettings(band);
+        setFrequency(band.getLastFrequency());
         updateDisplay();
     }
 
     public void stop() {
         state = OFF;
+        receiver.stop();
         updateDisplay();
     }
 
@@ -186,7 +203,9 @@ public class Pirocast {
             bandIndex += direction;
             if (bandIndex < 0) bandIndex = bands.size() - 1;
             if (bandIndex >= bands.size()) bandIndex = 0;
-            setFrequency(getCurrentBand().getLastFrequency());
+            Band band = getCurrentBand();
+            receiver.initDefaultSettings(band);
+            setFrequency(band.getLastFrequency());
         } else {
             Band band = getCurrentBand();
             Object currentVal = band.getSetting(set);
@@ -199,6 +218,13 @@ public class Pirocast {
                 band.setSetting(set, newVal);
             } else if (currentVal instanceof Boolean bool) {
                 band.setSetting(set, !bool);
+            }
+
+            switch (set) {
+                case D_GAIN -> receiver.setGain((int) band.getSetting(set));
+                case C_RDS -> receiver.setRDS((boolean) band.getSetting(set));
+                case E_DEEMP -> receiver.setDeemphasis((int) band.getSetting(set));
+                default -> {}
             }
         }
         updateDisplay();

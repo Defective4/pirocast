@@ -3,3 +3,4 @@
 /.project
 /.settings
 /src/main/grc/*.py
+__pycache__
