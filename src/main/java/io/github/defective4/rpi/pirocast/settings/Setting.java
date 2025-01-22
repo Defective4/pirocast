@@ -3,9 +3,23 @@ package io.github.defective4.rpi.pirocast.settings;
 import io.github.defective4.rpi.pirocast.Demodulator;
 
 public enum Setting {
-    MODE("Mode", new Demodulator[0], null, null, null, null), TUNING_STEP("Tuning Step", new Demodulator[] {
+    A_TUNING_STEP("Tuning Step", new Demodulator[] {
             Demodulator.AM, Demodulator.NFM
-    }, 10, 1, 100, val -> val + " KHz");
+    }, 10, 1, 100, val -> val + " KHz"), B_STEREO("Stereo", Demodulator.FM, 2, 0, 2, val -> switch ((int) val) {
+        case 1 -> "On";
+        case 2 -> "Auto";
+        default -> "Off";
+    }),
+    C_RDS("RDS", Demodulator.FM, true, null, null, new OnOffSettingFormatter()),
+    D_GAIN("RF Gain", Demodulator.values(), 10, 0, 49, null),
+    E_DEEMP("Deemphasis", new Demodulator[] {
+            Demodulator.FM, Demodulator.NFM
+    }, 2, 0, 3, val -> {
+        int v = (int) val;
+        if (v == 0) return "Off";
+        return v * 25 + "u";
+    }),
+    MODE("Mode", new Demodulator[0], null, null, null, null);
 
     private final Demodulator[] applicableModes;
     private final Object defaultValue;

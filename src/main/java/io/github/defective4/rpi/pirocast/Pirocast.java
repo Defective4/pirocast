@@ -108,8 +108,8 @@ public class Pirocast {
 
     public float getTuningStep() {
         Band band = getCurrentBand();
-        return Setting.TUNING_STEP.isApplicable(band.getDemodulator())
-                ? (int) band.getSetting(Setting.TUNING_STEP) * 1e3f
+        return Setting.A_TUNING_STEP.isApplicable(band.getDemodulator())
+                ? (int) band.getSetting(Setting.A_TUNING_STEP) * 1e3f
                 : 100e3f;
     }
 
@@ -197,6 +197,8 @@ public class Pirocast {
                     else if (newVal > max) newVal = min;
                 }
                 band.setSetting(set, newVal);
+            } else if (currentVal instanceof Boolean bool) {
+                band.setSetting(set, !bool);
             }
         }
         updateDisplay();
