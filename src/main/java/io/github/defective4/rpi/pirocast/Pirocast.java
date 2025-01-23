@@ -120,6 +120,12 @@ public class Pirocast {
         centerFrequency = bands.get(0).getDefaultFreq();
         display = new SwingLcdDisplayEmulator(16, 2); // TODO configuration
         display.setDisplayBacklight(false);
+        display.createCharacter(1, new byte[] {
+                0b01110, 0b00100, 0b00100, 0b00000, 0b00100, 0b01010, 0b01110, 0b01010
+        });
+        display.createCharacter(2, new byte[] {
+                0b01110, 0b00100, 0b00100, 0b00000, 0b01100, 0b01010, 0b01100, 0b01000
+        });
         inputManager = new SwingInputManager((Window) display, 500, KeyEvent.VK_LEFT, KeyEvent.VK_ENTER,
                 KeyEvent.VK_RIGHT);
         display.showDisplay();
@@ -357,9 +363,8 @@ public class Pirocast {
                         line1 += "*";
                         if (rdsStation != null) {
                             StringBuilder lineBuilder = display.generateCenteredText(rdsStation);
-                            // TODO custom chars
-                            if (ta) lineBuilder.setCharAt(lineBuilder.length() - 2, 'A');
-                            if (tp) lineBuilder.setCharAt(lineBuilder.length() - 1, 'B');
+                            if (ta) lineBuilder.setCharAt(lineBuilder.length() - 2, '\1');
+                            if (tp) lineBuilder.setCharAt(lineBuilder.length() - 1, '\2');
                             if (rdsStereo && (boolean) getCurrentBand().getSetting(Setting.B_STEREO))
                                 lineBuilder.setCharAt(0, 'S');
                             line1 = lineBuilder.toString();
