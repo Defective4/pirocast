@@ -166,6 +166,8 @@ public class Pirocast {
             @Override
             public void buttonLongClicked() {
                 switch (state) {
+                    case OFF -> start();
+                    case MAIN -> stop();
                     case SETTINGS -> {
                         state = MAIN;
                         updateDisplay();
@@ -255,11 +257,12 @@ public class Pirocast {
     }
 
     public void stop() {
+        getCurrentBand().setLastFrequency(getCurrentFrequency());
         state = OFF;
         receiver.stop();
         stopAPRS();
-        updateDisplay();
         aprsResampler.stop();
+        updateDisplay();
     }
 
     private void nextSetting() {

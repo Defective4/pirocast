@@ -36,9 +36,9 @@ public class WaveResamplerServer {
                                         AudioSystem.NOT_SPECIFIED))) {
                     byte[] buffer = new byte[1024];
                     while (!client.isClosed()) {
-                        if (target == null) continue;
                         int read = in.read(buffer);
                         if (read <= 0) break;
+                        if (target == null) continue;
                         target.write(buffer, 0, read);
                     }
                 } catch (Exception e) {

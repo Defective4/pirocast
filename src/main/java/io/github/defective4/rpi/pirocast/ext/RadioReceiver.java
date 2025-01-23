@@ -12,7 +12,7 @@ import io.github.defective4.sdr.rds.RDSListener;
 import io.github.defective4.sdr.rds.RDSReceiver;
 
 public class RadioReceiver {
-    private final RawMessageSender controller;
+    private RawMessageSender controller;
     private final int controllerPort;
     private Process process;
     private final RDSListener rdsListener;
@@ -28,7 +28,6 @@ public class RadioReceiver {
         this.rdsPort = rdsPort;
         this.receiverPath = receiverPath;
         this.rdsListener = rdsListener;
-        controller = new RawMessageSender("tcp://0.0.0.0:" + controllerPort, true);
     }
 
     public void initDefaultSettings(Band band) {
@@ -48,36 +47,37 @@ public class RadioReceiver {
     }
 
     public void setCenterFrequency(double freq) {
-        controller.sendMessage(new MessagePair("center_freq", freq));
+        if (controller != null) controller.sendMessage(new MessagePair("center_freq", freq));
     }
 
     public void setDeemphasis(int value) {
-        controller.sendMessage(new MessagePair("deemp", value * 25 * 1e-5));
+        if (controller != null) controller.sendMessage(new MessagePair("deemp", value * 25 * 1e-5));
     }
 
     public void setDemodFrequency(double freq) {
-        controller.sendMessage(new MessagePair("demod_freq", freq));
+        if (controller != null) controller.sendMessage(new MessagePair("demod_freq", freq));
     }
 
     public void setDemodulator(Demodulator demodulator) {
-        controller.sendMessage(new MessagePair("demod", demodulator.getId()));
+        if (controller != null) controller.sendMessage(new MessagePair("demod", demodulator.getId()));
     }
 
     public void setGain(int value) {
-        controller.sendMessage(new MessagePair("gain", value));
+        if (controller != null) controller.sendMessage(new MessagePair("gain", value));
     }
 
     public void setRDS(boolean enableRDS) {
-        controller.sendMessage(new MessagePair("enable_rds", enableRDS ? 1 : 0));
+        if (controller != null) controller.sendMessage(new MessagePair("enable_rds", enableRDS ? 1 : 0));
         if (enableRDS) startRDS();
         else stopRDS();
     }
 
     public void setStereo(boolean stereo) {
-        controller.sendMessage(new MessagePair("fm_stereo", stereo ? 1 : 0));
+        if (controller != null) controller.sendMessage(new MessagePair("fm_stereo", stereo ? 1 : 0));
     }
 
     public void start() throws IOException {
+        controller = new RawMessageSender("tcp://0.0.0.0:" + controllerPort, true);
         controller.start();
         process = new ProcessBuilder("python3", receiverPath, "-a", "tcp://localhost:" + controllerPort, "-r",
                 "tcp://localhost:" + rdsPort).start();
