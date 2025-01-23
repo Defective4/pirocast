@@ -382,7 +382,7 @@ blocks:
     alias: ''
     begin_tag: pmt.PMT_NIL
     comment: ''
-    file: /home/defective/recording.cfile
+    file: /home/defective/rds.cfile
     length: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -754,11 +754,11 @@ blocks:
     alias: ''
     center_freq: 57e3
     comment: ''
-    decim: '10'
+    decim: '19'
     maxoutbuf: '0'
     minoutbuf: '0'
     samp_rate: samp_rate / decimation_1
-    taps: firdes.low_pass(1.0, samp_rate / decimation_1, 7.5e3, 5e3)
+    taps: firdes.low_pass(1.0, samp_rate / 19, 7.5e3, 5e3)
     type: fcc
   states:
     bus_sink: false
@@ -797,7 +797,7 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    decim: samp_rate // decimation_1 // 10
+    decim: samp_rate // decimation_1 // 19
     fbw: '0'
     interp: '19000'
     maxoutbuf: '0'
@@ -827,7 +827,7 @@ blocks:
     bus_structure: null
     coordinate: [8, 496.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: rds_decoder_0
   id: rds_decoder
   parameters:
@@ -861,7 +861,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [672, 976.0]
+    coordinate: [688, 976.0]
     rotation: 180
     state: true
 - name: resampler_server
@@ -930,7 +930,7 @@ blocks:
     bus_structure: null
     coordinate: [8, 616.0]
     rotation: 180
-    state: disabled
+    state: enabled
 
 connections:
 - [analog_agc3_xx_0, '0', analog_pll_carriertracking_cc_0, '0']
