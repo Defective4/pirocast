@@ -9,7 +9,9 @@ public enum Setting {
     B_STEREO("Stereo", Demodulator.FM, true, null, null, new OnOffSettingFormatter()),
     C_APRS("APRS", Demodulator.NFM, true, null, null, new OnOffSettingFormatter()),
     D_RDS("RDS", Demodulator.FM, true, null, null, new OnOffSettingFormatter()),
-    E_GAIN("RF Gain", Demodulator.values(), 10, 0, 49, null),
+    E_GAIN("RF Gain", new Demodulator[] {
+            Demodulator.AM, Demodulator.FM, Demodulator.NFM
+    }, 10, 0, 49, null),
     F_DEEMP("Deemphasis", new Demodulator[] {
             Demodulator.FM, Demodulator.NFM
     }, 2, 0, 3, val -> {
