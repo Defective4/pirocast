@@ -41,9 +41,7 @@ public class WaveResamplerServer {
                         if (target == null) continue;
                         target.write(buffer, 0, read);
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                } catch (Exception e) {}
             }
         });
         connectionThread.start();

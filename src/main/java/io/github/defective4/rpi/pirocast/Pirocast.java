@@ -347,25 +347,31 @@ public class Pirocast {
                 line1 = freq <= 1e6 ? Double.toString(getCurrentFrequency() / 1e3) + " KHz"
                         : Double.toString(getCurrentFrequency() / 1e6) + " MHz";
                 Demodulator mode = getCurrentBand().getDemodulator();
-                if (mode == Demodulator.FM && rdsSignal) {
-                    line1 += "*";
-                    if (rdsStation != null) {
-                        StringBuilder lineBuilder = display.generateCenteredText(rdsStation);
-                        // TODO custom chars
-                        if (ta) lineBuilder.setCharAt(lineBuilder.length() - 2, 'A');
-                        if (tp) lineBuilder.setCharAt(lineBuilder.length() - 1, 'B');
-                        if (rdsStereo && (boolean) getCurrentBand().getSetting(Setting.B_STEREO))
-                            lineBuilder.setCharAt(0, 'S');
-                        line1 = lineBuilder.toString();
+                if (mode.getId() == Demodulator.UNDEFINED_ID) {
+                    if (mode == Demodulator.AUX) {
+                        display.centerTextInLine("AUX", 1);
                     }
-                    if (rdsRadiotext != null) {
-                        display.displayLineOfText(rdsRadiotext.substring(rdsRadiotextScrollIndex), 2);
+                } else {
+                    if (mode == Demodulator.FM && rdsSignal) {
+                        line1 += "*";
+                        if (rdsStation != null) {
+                            StringBuilder lineBuilder = display.generateCenteredText(rdsStation);
+                            // TODO custom chars
+                            if (ta) lineBuilder.setCharAt(lineBuilder.length() - 2, 'A');
+                            if (tp) lineBuilder.setCharAt(lineBuilder.length() - 1, 'B');
+                            if (rdsStereo && (boolean) getCurrentBand().getSetting(Setting.B_STEREO))
+                                lineBuilder.setCharAt(0, 'S');
+                            line1 = lineBuilder.toString();
+                        }
+                        if (rdsRadiotext != null) {
+                            display.displayLineOfText(rdsRadiotext.substring(rdsRadiotextScrollIndex), 2);
+                        }
+                    } else if (mode == Demodulator.NFM && !aprsQueue.isEmpty()) {
+                        String element = aprsQueue.peek().substring(aprsScrollIndex);
+                        display.displayLineOfText(element, 2);
                     }
-                } else if (mode == Demodulator.NFM && !aprsQueue.isEmpty()) {
-                    String element = aprsQueue.peek().substring(aprsScrollIndex);
-                    display.displayLineOfText(element, 2);
+                    display.centerTextInLine(line1, 1);
                 }
-                display.centerTextInLine(line1, 1);
             }
             default -> {
 
