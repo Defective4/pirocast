@@ -37,7 +37,6 @@ public class RadioReceiver {
         setRDS((boolean) band.getSetting(Setting.C_RDS));
         setDeemphasis((int) band.getSetting(Setting.F_DEEMP));
         setStereo((int) band.getSetting(Setting.B_STEREO) == 1);
-        setSquelch((int) band.getSetting(Setting.D_SQUELCH));
     }
 
     public boolean isAlive() {
@@ -72,10 +71,6 @@ public class RadioReceiver {
         controller.sendMessage(new MessagePair("enable_rds", enableRDS ? 1 : 0));
         if (enableRDS) startRDS();
         else stopRDS();
-    }
-
-    public void setSquelch(int squelch) {
-        controller.sendMessage(new MessagePair("squelch", squelch));
     }
 
     public void setStereo(boolean stereo) {

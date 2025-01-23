@@ -368,7 +368,6 @@ public class Pirocast {
             }
 
             switch (set) {
-                case D_SQUELCH -> receiver.setSquelch((int) band.getSetting(set));
                 case E_GAIN -> receiver.setGain((int) band.getSetting(set));
                 case C_RDS -> {
                     resetTransientData();

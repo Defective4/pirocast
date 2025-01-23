@@ -188,18 +188,6 @@ blocks:
     coordinate: [192, 8.0]
     rotation: 0
     state: enabled
-- name: squelch
-  id: variable
-  parameters:
-    comment: adjustable
-    value: '-100'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [192, 80.0]
-    rotation: 0
-    state: true
 - name: analog_agc3_xx_0
   id: analog_agc3_xx
   parameters:
@@ -330,23 +318,6 @@ blocks:
     bus_structure: null
     coordinate: [744, 360.0]
     rotation: 180
-    state: true
-- name: analog_simple_squelch_cc_0
-  id: analog_simple_squelch_cc
-  parameters:
-    affinity: ''
-    alias: ''
-    alpha: '1'
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    threshold: squelch
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [752, 200.0]
-    rotation: 0
     state: true
 - name: analog_wfm_rcv_0
   id: analog_wfm_rcv
@@ -714,13 +685,13 @@ blocks:
       \ gain, center_freq, squelch):\n        self.callbacks = {\n            \"demod\"\
       : demod,\n            \"demod_freq\": demod_freq,\n            \"enable_rds\"\
       : enable_rds,\n            \"fm_stereo\": fm_stereo,\n            \"deemp\"\
-      : deemp,\n            \"gain\": gain,\n            \"center_freq\": center_freq,\n\
-      \            \"squelch\": squelch\n        }\n\n    def msg_handler(self, msg):\n\
-      \        if not pmt.is_pair(msg) or pmt.is_dict(msg) or pmt.is_pdu(msg):\n \
-      \           gr.log.warn(\n                \"Input message %s is not a simple\
-      \ pair, dropping\" % repr(msg))\n            return\n\n        val = pmt.to_python(pmt.cdr(msg))\n\
-      \        key = pmt.to_python(pmt.car(msg))\n        self.callbacks[key](val)\n\
-      \n    def stop(self):\n        return True\n"
+      : deemp,\n            \"gain\": gain,\n            \"center_freq\": center_freq\n\
+      \        }\n\n    def msg_handler(self, msg):\n        if not pmt.is_pair(msg)\
+      \ or pmt.is_dict(msg) or pmt.is_pdu(msg):\n            gr.log.warn(\n      \
+      \          \"Input message %s is not a simple pair, dropping\" % repr(msg))\n\
+      \            return\n\n        val = pmt.to_python(pmt.cdr(msg))\n        key\
+      \ = pmt.to_python(pmt.car(msg))\n        self.callbacks[key](val)\n\n    def\
+      \ stop(self):\n        return True\n"
     affinity: ''
     alias: ''
     comment: 'Handle commands
@@ -774,7 +745,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [536, 184.0]
+    coordinate: [568, 184.0]
     rotation: 0
     state: true
 - name: freq_xlating_fir_filter_xxx_1_0
@@ -934,7 +905,7 @@ blocks:
   parameters:
     alias: ''
     code: self.epy_block_0.init_callbacks(self.set_demod, self.set_demod_freq, self.set_enable_rds,
-      self.set_fm_stereo, self.set_deemp, self.set_gain, self.set_center_freq, self.set_squelch)
+      self.set_fm_stereo, self.set_deemp, self.set_gain, self.set_center_freq)
     comment: Initialize command callbacks
     priority: '0'
     section: main_after_init
@@ -989,7 +960,6 @@ connections:
 - [analog_nbfm_rx_0, '0', blocks_multiply_const_vxx_0_0, '0']
 - [analog_pll_carriertracking_cc_0, '0', analog_am_demod_cf_0, '0']
 - [analog_quadrature_demod_cf_0, '0', freq_xlating_fir_filter_xxx_1_0, '0']
-- [analog_simple_squelch_cc_0, '0', blocks_selector_0_0_0, '0']
 - [analog_wfm_rcv_0, '0', analog_fm_deemph_0, '0']
 - [analog_wfm_rcv_pll_0, '0', blocks_selector_1, '1']
 - [analog_wfm_rcv_pll_0, '1', blocks_selector_1_0, '1']
@@ -1014,7 +984,7 @@ connections:
 - [digital_diff_decoder_bb_0, '0', rds_decoder_0, '0']
 - [digital_symbol_sync_xx_0, '0', digital_constellation_receiver_cb_0, '0']
 - [fir_filter_xxx_2, '0', analog_agc_xx_0, '0']
-- [freq_xlating_fir_filter_xxx_0, '0', analog_simple_squelch_cc_0, '0']
+- [freq_xlating_fir_filter_xxx_0, '0', blocks_selector_0_0_0, '0']
 - [freq_xlating_fir_filter_xxx_1_0, '0', rational_resampler_xxx_1, '0']
 - [low_pass_filter_0, '0', blocks_selector_2, '0']
 - [rational_resampler_xxx_1, '0', fir_filter_xxx_2, '0']
