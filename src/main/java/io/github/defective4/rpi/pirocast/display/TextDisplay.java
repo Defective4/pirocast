@@ -16,8 +16,8 @@ public interface TextDisplay {
     default StringBuilder generateCenteredText(String text) {
         StringBuilder builder = new StringBuilder(getColumns());
         double freeSpace = (getColumns() - text.length()) / 2d;
-        int left = (int) Math.floor(freeSpace);
-        int right = (int) Math.ceil(freeSpace);
+        int left = (int) Math.ceil(freeSpace);
+        int right = (int) Math.floor(freeSpace);
         for (int i = 0; i < left; i++) builder.append(" ");
         builder.append(text);
         for (int i = 0; i < right; i++) builder.append(" ");

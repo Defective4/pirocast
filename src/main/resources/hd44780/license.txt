@@ -1,0 +1,4 @@
+﻿The FontStruction “HD44780 5x8”
+(https://fontstruct.com/fontstructions/show/1724841) by “Lord Nightmare” is
+licensed under a Creative Commons Attribution Share Alike license
+(http://creativecommons.org/licenses/by-sa/3.0/).

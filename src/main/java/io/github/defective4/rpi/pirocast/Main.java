@@ -14,7 +14,7 @@ public class Main {
                             new Band("NFM", Demodulator.NFM, 144e6f, 146e6f, 1448e5f),
                             new Band("AUX", Demodulator.AUX, 0, 0, 0)),
                     props);
-            cast.start();
+//            cast.start();
         } catch (Exception e) {
             e.printStackTrace();
         }

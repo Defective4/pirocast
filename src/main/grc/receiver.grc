@@ -394,7 +394,7 @@ blocks:
     alias: ''
     begin_tag: pmt.PMT_NIL
     comment: ''
-    file: /home/defective/recording.cfile
+    file: /home/defective/rds.cfile
     length: '0'
     maxoutbuf: '0'
     minoutbuf: '0'

@@ -119,6 +119,7 @@ public class Pirocast {
         }));
         centerFrequency = bands.get(0).getDefaultFreq();
         display = new SwingLcdDisplayEmulator(16, 2); // TODO configuration
+        display.setDisplayBacklight(false);
         inputManager = new SwingInputManager((Window) display, 500, KeyEvent.VK_LEFT, KeyEvent.VK_ENTER,
                 KeyEvent.VK_RIGHT);
         display.showDisplay();

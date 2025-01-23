@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.io.InputStream;
 
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
@@ -15,9 +16,11 @@ import javax.swing.border.EmptyBorder;
 public class SwingLcdDisplayEmulator extends JFrame implements TextDisplay {
 
     private boolean backlit = true;
-    private final int columns;
+    private final Color bg = new Color(25, 64, 255);
 
+    private final int columns;
     private final JLabel[] labels;
+    private final JPanel panel;
 
     public SwingLcdDisplayEmulator(int columns, int rows) {
         this.columns = columns;
@@ -25,19 +28,27 @@ public class SwingLcdDisplayEmulator extends JFrame implements TextDisplay {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setTitle("LCD Emulator");
         setResizable(false);
-        Font lcdFont = new Font("Monospaced", Font.PLAIN, 32);
+        Font lcdFont;
+        try (InputStream in = getClass().getResourceAsStream("/hd44780/hd44780-5x8.ttf")) {
+            lcdFont = Font.createFont(Font.TRUETYPE_FONT, in).deriveFont(32f);
+        } catch (Exception e) {
+            e.printStackTrace();
+            lcdFont = new Font("Monospaced", Font.PLAIN, 32);
+        }
         setFont(lcdFont);
         FontMetrics metrics = getFontMetrics(lcdFont);
-        JPanel panel = new JPanel();
-        panel.setBorder(new EmptyBorder(0, 16, 0, 16));
-        panel.setBackground(Color.black);
+        panel = new JPanel();
+        panel.setBorder(new EmptyBorder(8, 16, 8, 16));
+        panel.setBackground(bg);
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        int maxWidth = 0;
+        for (int w : metrics.getWidths()) maxWidth = Math.max(maxWidth, w);
         for (int i = 0; i < rows; i++) {
             JLabel label = new JLabel();
             labels[i] = label;
-            label.setForeground(Color.cyan);
+            label.setForeground(Color.white);
             label.setFont(lcdFont);
-            label.setPreferredSize(new Dimension(metrics.stringWidth("0") * columns, metrics.getHeight()));
+            label.setPreferredSize(new Dimension(maxWidth * columns, metrics.getHeight()));
             panel.add(label);
         }
         setContentPane(panel);
@@ -80,7 +91,8 @@ public class SwingLcdDisplayEmulator extends JFrame implements TextDisplay {
 
     @Override
     public void setDisplayBacklight(boolean enabled) {
-        for (JLabel l : labels) l.setForeground(enabled ? Color.cyan : new Color(0, 0, 0, 0));
+        for (JLabel l : labels) l.setForeground(enabled ? Color.white : new Color(0, 0, 0, 0));
+        panel.setBackground(enabled ? bg : new Color(3, 6, 26));
         backlit = enabled;
     }
 
