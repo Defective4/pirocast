@@ -8,8 +8,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioFormat.Encoding;
@@ -35,7 +37,9 @@ public class Pirocast {
     private static final AudioFormat SIGNED_AUDIO_FORMAT = new AudioFormat(Encoding.PCM_SIGNED, 48000, 16, 1, 2, 48000,
             false);
     private final Direwolf aprsDecoder;
+    private final Queue<String> aprsQueue = new ConcurrentLinkedQueue<>();
     private final WaveResamplerServer aprsResampler;
+    private int aprsScrollIndex = 0;
     private int bandIndex = 0;
     private final List<Band> bands;
     private float centerFrequency = 0;
@@ -57,7 +61,7 @@ public class Pirocast {
         Objects.requireNonNull(properties);
         this.bands = bands;
         this.properties = properties;
-        aprsDecoder = new Direwolf(line -> { System.out.println(line); });
+        aprsDecoder = new Direwolf(line -> aprsQueue.add(line));
         aprsResampler = new WaveResamplerServer(properties.getAprsResamplerPort(), FLOAT_AUDIO_FORMAT,
                 SIGNED_AUDIO_FORMAT);
         receiver = new RadioReceiver(properties.getControllerPort(), properties.getRdsPort(),
@@ -181,6 +185,14 @@ public class Pirocast {
                     if (rdsRadiotext.length() - rdsRadiotextScrollIndex < display.getColumns())
                         rdsRadiotextScrollIndex = 0;
                 }
+                if (!aprsQueue.isEmpty()) {
+                    String element = aprsQueue.peek();
+                    aprsScrollIndex += 2;
+                    if (element.length() - aprsScrollIndex < display.getColumns()) {
+                        aprsQueue.poll();
+                        aprsScrollIndex = 0;
+                    }
+                }
             }
         }, 0, 1000);
     }
@@ -260,6 +272,8 @@ public class Pirocast {
         ta = false;
         tp = false;
         rdsStereo = false;
+        aprsQueue.clear();
+        aprsScrollIndex = 0;
         if ((int) getCurrentBand().getSetting(Setting.B_STEREO) == 2) receiver.setStereo(false);
     }
 
@@ -302,7 +316,8 @@ public class Pirocast {
                 float freq = getCurrentFrequency();
                 line1 = freq <= 1e6 ? Double.toString(getCurrentFrequency() / 1e3) + " KHz"
                         : Double.toString(getCurrentFrequency() / 1e6) + " MHz";
-                if (getCurrentBand().getDemodulator() == Demodulator.FM && rdsSignal) {
+                Demodulator mode = getCurrentBand().getDemodulator();
+                if (mode == Demodulator.FM && rdsSignal) {
                     line1 += "*";
                     if (rdsStation != null) {
                         StringBuilder lineBuilder = display.generateCenteredText(rdsStation);
@@ -316,6 +331,9 @@ public class Pirocast {
                     if (rdsRadiotext != null) {
                         display.displayLineOfText(rdsRadiotext.substring(rdsRadiotextScrollIndex), 2);
                     }
+                } else if (mode == Demodulator.NFM && !aprsQueue.isEmpty()) {
+                    String element = aprsQueue.peek().substring(aprsScrollIndex);
+                    display.displayLineOfText(element, 2);
                 }
                 display.centerTextInLine(line1, 1);
             }
