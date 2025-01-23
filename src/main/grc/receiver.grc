@@ -115,7 +115,7 @@ blocks:
   id: variable
   parameters:
     comment: adjustable
-    value: '1'
+    value: '0'
   states:
     bus_sink: false
     bus_source: false
@@ -411,7 +411,7 @@ blocks:
     alias: ''
     begin_tag: pmt.PMT_NIL
     comment: ''
-    file: /home/defective/rds.cfile
+    file: /home/defective/recording.cfile
     length: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -821,6 +821,24 @@ blocks:
     coordinate: [1160, 28.0]
     rotation: 0
     state: true
+- name: network_tcp_sink_0
+  id: network_tcp_sink
+  parameters:
+    addr: 127.0.0.1
+    affinity: ''
+    alias: ''
+    comment: ''
+    mode: '1'
+    port: resampler_server
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1168, 592.0]
+    rotation: 180
+    state: true
 - name: rational_resampler_xxx_1
   id: rational_resampler_xxx
   parameters:
@@ -903,14 +921,14 @@ blocks:
     label: APRS Resampler Server Port
     short_id: p
     type: intx
-    value: '2000'
+    value: '55557'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
     coordinate: [8, 688.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: snippet_0
   id: snippet
   parameters:
@@ -988,6 +1006,7 @@ connections:
 - [blocks_selector_0_0_0, '1', blocks_selector_0_0, '0']
 - [blocks_selector_1, '0', audio_sink_0, '0']
 - [blocks_selector_1_0, '0', audio_sink_0, '1']
+- [blocks_selector_1_0, '0', network_tcp_sink_0, '0']
 - [blocks_selector_2, '0', analog_agc3_xx_0, '0']
 - [blocks_selector_2, '1', analog_nbfm_rx_0, '0']
 - [blocks_throttle_0, '0', freq_xlating_fir_filter_xxx_0, '0']

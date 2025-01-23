@@ -11,10 +11,14 @@ import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioFormat.Encoding;
+
 import io.github.defective4.rpi.pirocast.display.SwingLcdDisplayEmulator;
 import io.github.defective4.rpi.pirocast.display.TextDisplay;
 import io.github.defective4.rpi.pirocast.ext.Direwolf;
 import io.github.defective4.rpi.pirocast.ext.RadioReceiver;
+import io.github.defective4.rpi.pirocast.ext.WaveResamplerServer;
 import io.github.defective4.rpi.pirocast.input.Button;
 import io.github.defective4.rpi.pirocast.input.InputAdapter;
 import io.github.defective4.rpi.pirocast.input.InputManager;
@@ -26,7 +30,12 @@ import io.github.defective4.sdr.rds.RDSListener;
 
 public class Pirocast {
 
+    private static final AudioFormat FLOAT_AUDIO_FORMAT = new AudioFormat(Encoding.PCM_FLOAT, 48000, 32, 1, 4, 48000,
+            false);
+    private static final AudioFormat SIGNED_AUDIO_FORMAT = new AudioFormat(Encoding.PCM_SIGNED, 48000, 16, 1, 2, 48000,
+            false);
     private final Direwolf aprsDecoder;
+    private final WaveResamplerServer aprsResampler;
     private int bandIndex = 0;
     private final List<Band> bands;
     private float centerFrequency = 0;
@@ -39,6 +48,7 @@ public class Pirocast {
     private boolean rdsSignal, ta, tp, rdsStereo;
     private final RadioReceiver receiver;
     private int settingIndex = 0;
+
     private ApplicationState state = OFF;
     private final Timer uiTimer = new Timer(true);
 
@@ -48,6 +58,8 @@ public class Pirocast {
         this.bands = bands;
         this.properties = properties;
         aprsDecoder = new Direwolf(line -> { System.out.println(line); });
+        aprsResampler = new WaveResamplerServer(properties.getAprsResamplerPort(), FLOAT_AUDIO_FORMAT,
+                SIGNED_AUDIO_FORMAT);
         receiver = new RadioReceiver(properties.getControllerPort(), properties.getRdsPort(),
                 properties.getReceiverExecutablePath(), new RDSListener() {
                     @Override
@@ -97,7 +109,7 @@ public class Pirocast {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            aprsDecoder.stop();
+            stopAPRS();
         }));
         centerFrequency = bands.get(0).getDefaultFreq();
         display = new SwingLcdDisplayEmulator(16, 2); // TODO configuration
@@ -216,7 +228,8 @@ public class Pirocast {
         display.setDisplayBacklight(true);
         state = MAIN;
         receiver.start();
-        aprsDecoder.start();
+        startAPRS();
+        aprsResampler.start();
         resetTransientData();
 
         Band band = getCurrentBand();
@@ -228,8 +241,9 @@ public class Pirocast {
     public void stop() {
         state = OFF;
         receiver.stop();
-        aprsDecoder.stop();
+        stopAPRS();
         updateDisplay();
+        aprsResampler.stop();
     }
 
     private void nextSetting() {
@@ -247,6 +261,16 @@ public class Pirocast {
         tp = false;
         rdsStereo = false;
         if ((int) getCurrentBand().getSetting(Setting.B_STEREO) == 2) receiver.setStereo(false);
+    }
+
+    private void startAPRS() {
+        aprsDecoder.start();
+        aprsResampler.setTarget(aprsDecoder.getOutputStream());
+    }
+
+    private void stopAPRS() {
+        aprsDecoder.stop();
+        aprsResampler.setTarget(null);
     }
 
     private void updateDisplay() {

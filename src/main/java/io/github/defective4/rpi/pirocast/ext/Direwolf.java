@@ -44,7 +44,7 @@ public class Direwolf {
                         if (!line.isBlank()) {
                             if (kissReady && agwReady) {
                                 if (!line.startsWith("[")) {
-
+                                    listener.received(line);
                                 }
                             } else if (line.startsWith("Ready to accept KISS TCP client application")) {
                                 kissReady = true;
