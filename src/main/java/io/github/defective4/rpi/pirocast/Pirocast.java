@@ -77,7 +77,7 @@ public class Pirocast {
                         tp = flags.hasTP();
                         if (flags.isStereo() != rdsStereo) {
                             rdsStereo = flags.isStereo();
-                            if ((int) getCurrentBand().getSetting(Setting.B_STEREO) == 2) {
+                            if ((boolean) getCurrentBand().getSetting(Setting.B_STEREO)) {
                                 receiver.setStereo(rdsStereo);
                             }
                         }
@@ -287,7 +287,7 @@ public class Pirocast {
         rdsStereo = false;
         aprsQueue.clear();
         aprsScrollIndex = 0;
-        if ((int) getCurrentBand().getSetting(Setting.B_STEREO) == 2) receiver.setStereo(false);
+        if ((boolean) getCurrentBand().getSetting(Setting.B_STEREO)) receiver.setStereo(false);
     }
 
     private void startAPRS() {
@@ -342,7 +342,7 @@ public class Pirocast {
                         // TODO custom chars
                         if (ta) lineBuilder.setCharAt(lineBuilder.length() - 2, 'A');
                         if (tp) lineBuilder.setCharAt(lineBuilder.length() - 1, 'B');
-                        if (rdsStereo && (int) getCurrentBand().getSetting(Setting.B_STEREO) != 0)
+                        if (rdsStereo && (boolean) getCurrentBand().getSetting(Setting.B_STEREO))
                             lineBuilder.setCharAt(0, 'S');
                         line1 = lineBuilder.toString();
                     }
@@ -392,10 +392,7 @@ public class Pirocast {
                     receiver.setRDS((boolean) band.getSetting(set));
                 }
                 case F_DEEMP -> receiver.setDeemphasis((int) band.getSetting(set));
-                case B_STEREO -> {
-                    int val = (int) band.getSetting(set);
-                    receiver.setStereo(val == 1 || val == 2 && rdsStereo);
-                }
+                case B_STEREO -> receiver.setStereo((boolean) band.getSetting(set));
                 default -> {}
             }
         }

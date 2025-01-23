@@ -5,11 +5,8 @@ import io.github.defective4.rpi.pirocast.Demodulator;
 public enum Setting {
     A_TUNING_STEP("Tuning Step", new Demodulator[] {
             Demodulator.AM, Demodulator.NFM
-    }, 10, 1, 100, val -> val + " KHz"), B_STEREO("Stereo", Demodulator.FM, 2, 0, 2, val -> switch ((int) val) {
-        case 1 -> "On";
-        case 2 -> "Auto";
-        default -> "Off";
-    }),
+    }, 10, 1, 100, val -> val + " KHz"),
+    B_STEREO("Stereo", Demodulator.FM, true, null, null, new OnOffSettingFormatter()),
     C_RDS("RDS", Demodulator.FM, true, null, null, new OnOffSettingFormatter()),
     E_GAIN("RF Gain", Demodulator.values(), 10, 0, 49, null),
     F_DEEMP("Deemphasis", new Demodulator[] {

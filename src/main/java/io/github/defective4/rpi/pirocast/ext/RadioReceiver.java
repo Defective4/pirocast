@@ -35,7 +35,7 @@ public class RadioReceiver {
         setGain((int) band.getSetting(Setting.E_GAIN));
         setRDS((boolean) band.getSetting(Setting.C_RDS));
         setDeemphasis((int) band.getSetting(Setting.F_DEEMP));
-        setStereo((int) band.getSetting(Setting.B_STEREO) == 1);
+        setStereo((boolean) band.getSetting(Setting.B_STEREO));
     }
 
     public boolean isAlive() {
