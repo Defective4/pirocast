@@ -46,6 +46,10 @@ public class RadioReceiver {
         if (rdsReceiver != null) rdsReceiver.reset();
     }
 
+    public void setAPRS(boolean aprs) {
+        if (controller != null) controller.sendMessage(new MessagePair("aprs", aprs ? 1 : 0));
+    }
+
     public void setCenterFrequency(double freq) {
         if (controller != null) controller.sendMessage(new MessagePair("center_freq", freq));
     }

@@ -33,6 +33,18 @@ options:
     state: enabled
 
 blocks:
+- name: aprs
+  id: variable
+  parameters:
+    comment: ''
+    value: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [192, 80.0]
+    rotation: 0
+    state: true
 - name: center_freq
   id: variable
   parameters:
@@ -573,6 +585,29 @@ blocks:
     coordinate: [1368, 48.0]
     rotation: 0
     state: true
+- name: blocks_selector_3
+  id: blocks_selector
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    enabled: aprs == 1
+    input_index: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '1'
+    num_outputs: '1'
+    output_index: '0'
+    showports: 'True'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1368, 672.0]
+    rotation: 0
+    state: true
 - name: blocks_throttle_0
   id: blocks_throttle
   parameters:
@@ -682,16 +717,17 @@ blocks:
       \    out_sig=None\n        )\n\n        self.message_port_register_in(pmt.intern(\"\
       inpair\"))\n        self.set_msg_handler(pmt.intern(\"inpair\"), self.msg_handler)\n\
       \n    def init_callbacks(self, demod, demod_freq, enable_rds, fm_stereo, deemp,\
-      \ gain, center_freq):\n        self.callbacks = {\n            \"demod\": demod,\n\
-      \            \"demod_freq\": demod_freq,\n            \"enable_rds\": enable_rds,\n\
-      \            \"fm_stereo\": fm_stereo,\n            \"deemp\": deemp,\n    \
-      \        \"gain\": gain,\n            \"center_freq\": center_freq\n       \
-      \ }\n\n    def msg_handler(self, msg):\n        if not pmt.is_pair(msg) or pmt.is_dict(msg)\
-      \ or pmt.is_pdu(msg):\n            gr.log.warn(\n                \"Input message\
-      \ %s is not a simple pair, dropping\" % repr(msg))\n            return\n\n \
-      \       val = pmt.to_python(pmt.cdr(msg))\n        key = pmt.to_python(pmt.car(msg))\n\
-      \        if key in self.callbacks:\n            self.callbacks[key](val)\n\n\
-      \    def stop(self):\n        return True\n"
+      \ gain, center_freq, aprs):\n        self.callbacks = {\n            \"demod\"\
+      : demod,\n            \"demod_freq\": demod_freq,\n            \"enable_rds\"\
+      : enable_rds,\n            \"fm_stereo\": fm_stereo,\n            \"deemp\"\
+      : deemp,\n            \"gain\": gain,\n            \"center_freq\": center_freq,\n\
+      \            \"aprs\": aprs\n        }\n\n    def msg_handler(self, msg):\n\
+      \        if not pmt.is_pair(msg) or pmt.is_dict(msg) or pmt.is_pdu(msg):\n \
+      \           gr.log.warn(\n                \"Input message %s is not a simple\
+      \ pair, dropping\" % repr(msg))\n            return\n\n        val = pmt.to_python(pmt.cdr(msg))\n\
+      \        key = pmt.to_python(pmt.car(msg))\n        if key in self.callbacks:\n\
+      \            self.callbacks[key](val)\n\n    def stop(self):\n        return\
+      \ True\n"
     affinity: ''
     alias: ''
     comment: 'Handle commands
@@ -807,8 +843,8 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1168, 592.0]
-    rotation: 180
+    coordinate: [1704, 688.0]
+    rotation: 0
     state: true
 - name: rational_resampler_xxx_1
   id: rational_resampler_xxx
@@ -905,7 +941,7 @@ blocks:
   parameters:
     alias: ''
     code: self.epy_block_0.init_callbacks(self.set_demod, self.set_demod_freq, self.set_enable_rds,
-      self.set_fm_stereo, self.set_deemp, self.set_gain, self.set_center_freq)
+      self.set_fm_stereo, self.set_deemp, self.set_gain, self.set_center_freq, self.set_aprs)
     comment: Initialize command callbacks
     priority: '0'
     section: main_after_init
@@ -976,9 +1012,10 @@ connections:
 - [blocks_selector_0_0_0, '1', blocks_selector_0_0, '0']
 - [blocks_selector_1, '0', audio_sink_0, '0']
 - [blocks_selector_1_0, '0', audio_sink_0, '1']
-- [blocks_selector_1_0, '0', network_tcp_sink_0, '0']
+- [blocks_selector_1_0, '0', blocks_selector_3, '0']
 - [blocks_selector_2, '0', analog_agc3_xx_0, '0']
 - [blocks_selector_2, '1', analog_nbfm_rx_0, '0']
+- [blocks_selector_3, '0', network_tcp_sink_0, '0']
 - [blocks_throttle_0, '0', freq_xlating_fir_filter_xxx_0, '0']
 - [digital_constellation_receiver_cb_0, '0', digital_diff_decoder_bb_0, '0']
 - [digital_diff_decoder_bb_0, '0', rds_decoder_0, '0']

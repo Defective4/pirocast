@@ -293,9 +293,13 @@ public class Pirocast {
     private void startAPRS() {
         aprsDecoder.start();
         aprsResampler.setTarget(aprsDecoder.getOutputStream());
+        receiver.setAPRS(true);
     }
 
     private void stopAPRS() {
+        try {
+            receiver.setAPRS(false);
+        } catch (Exception e) {}
         aprsDecoder.stop();
         aprsResampler.setTarget(null);
     }
