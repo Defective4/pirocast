@@ -242,12 +242,14 @@ public class Pirocast {
             Band band = getCurrentBand();
             display.setDisplayBacklight(true);
             state = MAIN;
-            receiver.start();
+            if (band.getDemodulator().getId() != Demodulator.UNDEFINED_ID) {
+                receiver.start();
+                receiver.initDefaultSettings(band);
+            }
             if (band.getDemodulator() == Demodulator.NFM && (boolean) band.getSetting(Setting.C_APRS)) startAPRS();
             aprsResampler.start();
             resetTransientData();
 
-            receiver.initDefaultSettings(band);
             setFrequency(band.getLastFrequency());
         } catch (Exception e) {
             e.printStackTrace();
@@ -373,9 +375,19 @@ public class Pirocast {
             if (bandIndex < 0) bandIndex = bands.size() - 1;
             if (bandIndex >= bands.size()) bandIndex = 0;
             Band band = getCurrentBand();
-            receiver.initDefaultSettings(band);
-            setFrequency(band.getLastFrequency());
-            receiver.setRDS(band.getDemodulator() == Demodulator.FM && (boolean) band.getSetting(Setting.D_RDS));
+            if (band.getDemodulator().getId() == Demodulator.UNDEFINED_ID) {
+                receiver.stop();
+            } else {
+                try {
+                    receiver.start();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    raiseError();
+                }
+                receiver.initDefaultSettings(band);
+                setFrequency(band.getLastFrequency());
+                receiver.setRDS(band.getDemodulator() == Demodulator.FM && (boolean) band.getSetting(Setting.D_RDS));
+            }
             if (band.getDemodulator() == Demodulator.NFM && (boolean) band.getSetting(Setting.C_APRS)) startAPRS();
             else stopAPRS();
         } else {

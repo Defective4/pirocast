@@ -89,8 +89,9 @@ public class RadioReceiver {
     }
 
     public void stop() {
-        try {
+        if (controller != null) try {
             controller.close();
+            controller = null;
         } catch (Exception e) {
             e.printStackTrace();
         }
