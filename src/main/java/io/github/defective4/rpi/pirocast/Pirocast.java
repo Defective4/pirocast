@@ -14,9 +14,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioFormat.Encoding;
+import javax.sound.sampled.LineUnavailableException;
 
 import io.github.defective4.rpi.pirocast.display.SwingLcdDisplayEmulator;
 import io.github.defective4.rpi.pirocast.display.TextDisplay;
+import io.github.defective4.rpi.pirocast.ext.AUXLoopback;
 import io.github.defective4.rpi.pirocast.ext.Direwolf;
 import io.github.defective4.rpi.pirocast.ext.RadioReceiver;
 import io.github.defective4.rpi.pirocast.ext.WaveResamplerServer;
@@ -39,6 +41,7 @@ public class Pirocast {
     private final Queue<String> aprsQueue = new ConcurrentLinkedQueue<>();
     private final WaveResamplerServer aprsResampler;
     private int aprsScrollIndex = 0;
+    private final AUXLoopback auxLoopback = new AUXLoopback();
     private int bandIndex = 0;
     private final List<Band> bands;
     private float centerFrequency = 0;
@@ -155,7 +158,7 @@ public class Pirocast {
                         nextSetting();
                         updateDisplay();
                     }
-                    case MAIN -> {
+                    case MAIN, ERROR -> {
                         state = SETTINGS;
                         updateDisplay();
                     }
@@ -245,6 +248,8 @@ public class Pirocast {
             if (band.getDemodulator().getId() != Demodulator.UNDEFINED_ID) {
                 receiver.start();
                 receiver.initDefaultSettings(band);
+            } else if (band.getDemodulator() == Demodulator.AUX) {
+                auxLoopback.start();
             }
             if (band.getDemodulator() == Demodulator.NFM && (boolean) band.getSetting(Setting.C_APRS)) startAPRS();
             aprsResampler.start();
@@ -262,6 +267,7 @@ public class Pirocast {
         getCurrentBand().setLastFrequency(getCurrentFrequency());
         state = OFF;
         receiver.stop();
+        auxLoopback.close();
         stopAPRS();
         aprsResampler.stop();
         updateDisplay();
@@ -377,7 +383,14 @@ public class Pirocast {
             Band band = getCurrentBand();
             if (band.getDemodulator().getId() == Demodulator.UNDEFINED_ID) {
                 receiver.stop();
+                try {
+                    auxLoopback.start();
+                } catch (LineUnavailableException e) {
+                    e.printStackTrace();
+                    raiseError();
+                }
             } else {
+                auxLoopback.close();
                 try {
                     receiver.start();
                 } catch (Exception e) {
