@@ -4,7 +4,6 @@ import static io.github.defective4.rpi.pirocast.ApplicationState.*;
 
 import java.awt.Window;
 import java.awt.event.KeyEvent;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -194,7 +193,7 @@ public class Pirocast {
                     }
                 }
             }
-        }, 0, 1000);
+        }, 1000, 1000);
     }
 
     public Band getCurrentBand() {
@@ -236,17 +235,22 @@ public class Pirocast {
         updateDisplay();
     }
 
-    public void start() throws IOException {
-        display.setDisplayBacklight(true);
-        state = MAIN;
-        receiver.start();
-        startAPRS();
-        aprsResampler.start();
-        resetTransientData();
+    public void start() {
+        try {
+            display.setDisplayBacklight(true);
+            state = MAIN;
+            receiver.start();
+            startAPRS();
+            aprsResampler.start();
+            resetTransientData();
 
-        Band band = getCurrentBand();
-        receiver.initDefaultSettings(band);
-        setFrequency(band.getLastFrequency());
+            Band band = getCurrentBand();
+            receiver.initDefaultSettings(band);
+            setFrequency(band.getLastFrequency());
+        } catch (Exception e) {
+            e.printStackTrace();
+            raiseError();
+        }
         updateDisplay();
     }
 
@@ -261,6 +265,12 @@ public class Pirocast {
     private void nextSetting() {
         settingIndex++;
         if (settingIndex > getCurrentBand().getSettings().size()) settingIndex = 0;
+    }
+
+    private void raiseError() {
+        stop();
+        state = ERROR;
+        display.setDisplayBacklight(true);
     }
 
     private void resetTransientData() {
@@ -289,6 +299,11 @@ public class Pirocast {
 
     private void updateDisplay() {
         switch (state) {
+            case ERROR -> {
+                display.clearDisplay();
+                display.centerTextInLine("System", 1);
+                display.centerTextInLine("Error", 2);
+            }
             case SETTINGS -> {
                 display.clearDisplay();
                 Setting setting = getCurrentSetting();
