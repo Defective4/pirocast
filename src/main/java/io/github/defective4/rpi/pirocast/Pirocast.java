@@ -239,14 +239,14 @@ public class Pirocast {
 
     public void start() {
         try {
+            Band band = getCurrentBand();
             display.setDisplayBacklight(true);
             state = MAIN;
             receiver.start();
-            startAPRS();
+            if (band.getDemodulator() == Demodulator.NFM && (boolean) band.getSetting(Setting.C_APRS)) startAPRS();
             aprsResampler.start();
             resetTransientData();
 
-            Band band = getCurrentBand();
             receiver.initDefaultSettings(band);
             setFrequency(band.getLastFrequency());
         } catch (Exception e) {
@@ -371,6 +371,9 @@ public class Pirocast {
             Band band = getCurrentBand();
             receiver.initDefaultSettings(band);
             setFrequency(band.getLastFrequency());
+            receiver.setRDS(band.getDemodulator() == Demodulator.FM && (boolean) band.getSetting(Setting.D_RDS));
+            if (band.getDemodulator() == Demodulator.NFM && (boolean) band.getSetting(Setting.C_APRS)) startAPRS();
+            else stopAPRS();
         } else {
             Band band = getCurrentBand();
             Object currentVal = band.getSetting(set);
@@ -387,12 +390,17 @@ public class Pirocast {
 
             switch (set) {
                 case E_GAIN -> receiver.setGain((int) band.getSetting(set));
-                case C_RDS -> {
+                case D_RDS -> {
                     resetTransientData();
                     receiver.setRDS((boolean) band.getSetting(set));
                 }
                 case F_DEEMP -> receiver.setDeemphasis((int) band.getSetting(set));
                 case B_STEREO -> receiver.setStereo((boolean) band.getSetting(set));
+                case C_APRS -> {
+                    resetTransientData();
+                    if ((boolean) band.getSetting(Setting.C_APRS)) startAPRS();
+                    else stopAPRS();
+                }
                 default -> {}
             }
         }

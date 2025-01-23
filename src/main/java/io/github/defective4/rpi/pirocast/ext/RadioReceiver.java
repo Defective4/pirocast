@@ -33,7 +33,7 @@ public class RadioReceiver {
     public void initDefaultSettings(Band band) {
         setDemodulator(band.getDemodulator());
         setGain((int) band.getSetting(Setting.E_GAIN));
-        setRDS((boolean) band.getSetting(Setting.C_RDS));
+        setRDS((boolean) band.getSetting(Setting.D_RDS));
         setDeemphasis((int) band.getSetting(Setting.F_DEEMP));
         setStereo((boolean) band.getSetting(Setting.B_STEREO));
     }
@@ -77,6 +77,7 @@ public class RadioReceiver {
     }
 
     public void start() throws IOException {
+        if (isAlive()) return;
         controller = new RawMessageSender("tcp://0.0.0.0:" + controllerPort, true);
         controller.start();
         process = new ProcessBuilder("python3", receiverPath, "-a", "tcp://localhost:" + controllerPort, "-r",

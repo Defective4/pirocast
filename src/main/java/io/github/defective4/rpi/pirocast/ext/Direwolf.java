@@ -31,6 +31,7 @@ public class Direwolf {
     }
 
     public void start() {
+        if (isAlive()) return;
         kissReady = false;
         agwReady = false;
         try {
