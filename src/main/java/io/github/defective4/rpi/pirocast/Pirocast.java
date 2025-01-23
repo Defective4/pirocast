@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import io.github.defective4.rpi.pirocast.display.SwingLcdDisplayEmulator;
 import io.github.defective4.rpi.pirocast.display.TextDisplay;
@@ -18,6 +20,8 @@ import io.github.defective4.rpi.pirocast.input.InputManager;
 import io.github.defective4.rpi.pirocast.input.SwingInputManager;
 import io.github.defective4.rpi.pirocast.props.AppProperties;
 import io.github.defective4.rpi.pirocast.settings.Setting;
+import io.github.defective4.sdr.rds.RDSFlags;
+import io.github.defective4.sdr.rds.RDSListener;
 
 public class Pirocast {
 
@@ -28,16 +32,57 @@ public class Pirocast {
     private final InputManager inputManager;
     private float offsetFrequency = 0;
     private final AppProperties properties;
+    private String rdsRadiotext, rdsStation;
+    private int rdsRadiotextScrollIndex = 0;
+    private boolean rdsSignal, ta, tp, rdsStereo;
     private final RadioReceiver receiver;
     private int settingIndex = 0;
     private ApplicationState state = OFF;
+    private final Timer uiTimer = new Timer(true);
 
     public Pirocast(List<Band> bands, AppProperties properties) {
         if (bands.isEmpty()) throw new IllegalArgumentException("Band list cannot be empty");
         Objects.requireNonNull(properties);
         this.bands = bands;
         this.properties = properties;
-        receiver = new RadioReceiver(properties.getControllerPort(), properties.getReceiverExecutablePath());
+        receiver = new RadioReceiver(properties.getControllerPort(), properties.getRdsPort(),
+                properties.getReceiverExecutablePath(), new RDSListener() {
+                    @Override
+                    public void clockUpdated(String time) {
+                        rdsSignal = true;
+                    }
+
+                    @Override
+                    public void flagsUpdated(RDSFlags flags) {
+                        rdsSignal = true;
+                        ta = flags.hasTA();
+                        tp = flags.hasTP();
+                        rdsStereo = flags.isStereo();
+                    }
+
+                    @Override
+                    public void programInfoUpdated(String programInfo) {
+                        rdsSignal = true;
+                    }
+
+                    @Override
+                    public void programTypeUpdated(String programType) {
+                        rdsSignal = true;
+                    }
+
+                    @Override
+                    public void radiotextUpdated(String radiotext) {
+                        rdsSignal = true;
+                        rdsRadiotext = radiotext;
+                        rdsRadiotextScrollIndex = 0;
+                    }
+
+                    @Override
+                    public void stationUpdated(String station) {
+                        rdsSignal = true;
+                        rdsStation = station;
+                    }
+                });
         Runtime.getRuntime().addShutdownHook(new Thread(() -> receiver.stop()));
         centerFrequency = bands.get(0).getDefaultFreq();
         display = new SwingLcdDisplayEmulator(16, 2); // TODO configuration
@@ -99,6 +144,18 @@ public class Pirocast {
                 }
             }
         });
+        uiTimer.scheduleAtFixedRate(new TimerTask() {
+
+            @Override
+            public void run() {
+                updateDisplay();
+                if (rdsRadiotext != null) {
+                    rdsRadiotextScrollIndex++;
+                    if (rdsRadiotext.length() - rdsRadiotextScrollIndex < display.getColumns())
+                        rdsRadiotextScrollIndex = 0;
+                }
+            }
+        }, 0, 1000);
     }
 
     public Band getCurrentBand() {
@@ -136,10 +193,12 @@ public class Pirocast {
         }
         receiver.setDemodFrequency(offsetFrequency);
         receiver.setCenterFrequency(centerFrequency);
+        resetTransientData();
         updateDisplay();
     }
 
     public void start() throws IOException {
+        resetTransientData();
         display.setDisplayBacklight(true);
         state = MAIN;
         receiver.start();
@@ -159,6 +218,17 @@ public class Pirocast {
     private void nextSetting() {
         settingIndex++;
         if (settingIndex > getCurrentBand().getSettings().size()) settingIndex = 0;
+    }
+
+    private void resetTransientData() {
+        receiver.resetRDS();
+        rdsRadiotext = null;
+        rdsStation = null;
+        rdsSignal = false;
+        rdsRadiotextScrollIndex = 0;
+        ta = false;
+        tp = false;
+        rdsStereo = false;
     }
 
     private void updateDisplay() {
@@ -187,7 +257,24 @@ public class Pirocast {
             case MAIN -> {
                 display.clearDisplay();
                 String line1;
-                line1 = Double.toString(getCurrentFrequency() / 1e6) + " MHz";
+                float freq = getCurrentFrequency();
+                line1 = freq <= 1e6 ? Double.toString(getCurrentFrequency() / 1e3) + " KHz"
+                        : Double.toString(getCurrentFrequency() / 1e6) + " MHz";
+                if (getCurrentBand().getDemodulator() == Demodulator.FM && rdsSignal) {
+                    line1 += "*";
+                    if (rdsStation != null) {
+                        StringBuilder lineBuilder = display.generateCenteredText(rdsStation);
+                        // TODO custom chars
+                        if (ta) lineBuilder.setCharAt(lineBuilder.length() - 2, 'A');
+                        if (tp) lineBuilder.setCharAt(lineBuilder.length() - 1, 'B');
+                        if (rdsStereo && (int) getCurrentBand().getSetting(Setting.B_STEREO) != 0)
+                            lineBuilder.setCharAt(0, 'S');
+                        line1 = lineBuilder.toString();
+                    }
+                    if (rdsRadiotext != null) {
+                        display.displayLineOfText(rdsRadiotext.substring(rdsRadiotextScrollIndex), 2);
+                    }
+                }
                 display.centerTextInLine(line1, 1);
             }
             default -> {
@@ -222,7 +309,10 @@ public class Pirocast {
 
             switch (set) {
                 case D_GAIN -> receiver.setGain((int) band.getSetting(set));
-                case C_RDS -> receiver.setRDS((boolean) band.getSetting(set));
+                case C_RDS -> {
+                    resetTransientData();
+                    receiver.setRDS((boolean) band.getSetting(set));
+                }
                 case E_DEEMP -> receiver.setDeemphasis((int) band.getSetting(set));
                 default -> {}
             }
