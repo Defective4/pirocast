@@ -36,6 +36,7 @@ public class RadioReceiver {
         setGain((int) band.getSetting(Setting.D_GAIN));
         setRDS((boolean) band.getSetting(Setting.C_RDS));
         setDeemphasis((int) band.getSetting(Setting.E_DEEMP));
+        setStereo((int) band.getSetting(Setting.B_STEREO) == 1);
     }
 
     public boolean isAlive() {
@@ -70,6 +71,10 @@ public class RadioReceiver {
         controller.sendMessage(new MessagePair("enable_rds", enableRDS ? 1 : 0));
         if (enableRDS) startRDS();
         else stopRDS();
+    }
+
+    public void setStereo(boolean stereo) {
+        controller.sendMessage(new MessagePair("fm_stereo", stereo ? 1 : 0));
     }
 
     public void start() throws IOException {

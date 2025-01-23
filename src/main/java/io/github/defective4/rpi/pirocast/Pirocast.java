@@ -57,7 +57,12 @@ public class Pirocast {
                         rdsSignal = true;
                         ta = flags.hasTA();
                         tp = flags.hasTP();
-                        rdsStereo = flags.isStereo();
+                        if (flags.isStereo() != rdsStereo) {
+                            rdsStereo = flags.isStereo();
+                            if ((int) getCurrentBand().getSetting(Setting.B_STEREO) == 2) {
+                                receiver.setStereo(rdsStereo);
+                            }
+                        }
                     }
 
                     @Override
@@ -198,10 +203,10 @@ public class Pirocast {
     }
 
     public void start() throws IOException {
-        resetTransientData();
         display.setDisplayBacklight(true);
         state = MAIN;
         receiver.start();
+        resetTransientData();
 
         Band band = getCurrentBand();
         receiver.initDefaultSettings(band);
@@ -229,6 +234,7 @@ public class Pirocast {
         ta = false;
         tp = false;
         rdsStereo = false;
+        if ((int) getCurrentBand().getSetting(Setting.B_STEREO) == 2) receiver.setStereo(false);
     }
 
     private void updateDisplay() {
@@ -314,6 +320,10 @@ public class Pirocast {
                     receiver.setRDS((boolean) band.getSetting(set));
                 }
                 case E_DEEMP -> receiver.setDeemphasis((int) band.getSetting(set));
+                case B_STEREO -> {
+                    int val = (int) band.getSetting(set);
+                    receiver.setStereo(val == 1 || val == 2 && rdsStereo);
+                }
                 default -> {}
             }
         }
