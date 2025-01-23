@@ -11,8 +11,11 @@ public enum Setting {
         default -> "Off";
     }),
     C_RDS("RDS", Demodulator.FM, true, null, null, new OnOffSettingFormatter()),
-    D_GAIN("RF Gain", Demodulator.values(), 10, 0, 49, null),
-    E_DEEMP("Deemphasis", new Demodulator[] {
+    D_SQUELCH("Squelch", new Demodulator[] {
+            Demodulator.AM, Demodulator.NFM
+    }, -50, -50, 0, val -> val + " dB"),
+    E_GAIN("RF Gain", Demodulator.values(), 10, 0, 49, null),
+    F_DEEMP("Deemphasis", new Demodulator[] {
             Demodulator.FM, Demodulator.NFM
     }, 2, 0, 3, val -> {
         int v = (int) val;

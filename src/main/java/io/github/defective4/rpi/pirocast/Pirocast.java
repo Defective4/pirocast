@@ -314,12 +314,13 @@ public class Pirocast {
             }
 
             switch (set) {
-                case D_GAIN -> receiver.setGain((int) band.getSetting(set));
+                case D_SQUELCH -> receiver.setSquelch((int) band.getSetting(set));
+                case E_GAIN -> receiver.setGain((int) band.getSetting(set));
                 case C_RDS -> {
                     resetTransientData();
                     receiver.setRDS((boolean) band.getSetting(set));
                 }
-                case E_DEEMP -> receiver.setDeemphasis((int) band.getSetting(set));
+                case F_DEEMP -> receiver.setDeemphasis((int) band.getSetting(set));
                 case B_STEREO -> {
                     int val = (int) band.getSetting(set);
                     receiver.setStereo(val == 1 || val == 2 && rdsStereo);
