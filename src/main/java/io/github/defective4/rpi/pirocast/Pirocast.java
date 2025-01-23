@@ -13,6 +13,7 @@ import java.util.TimerTask;
 
 import io.github.defective4.rpi.pirocast.display.SwingLcdDisplayEmulator;
 import io.github.defective4.rpi.pirocast.display.TextDisplay;
+import io.github.defective4.rpi.pirocast.ext.Direwolf;
 import io.github.defective4.rpi.pirocast.ext.RadioReceiver;
 import io.github.defective4.rpi.pirocast.input.Button;
 import io.github.defective4.rpi.pirocast.input.InputAdapter;
@@ -25,6 +26,7 @@ import io.github.defective4.sdr.rds.RDSListener;
 
 public class Pirocast {
 
+    private final Direwolf aprsDecoder;
     private int bandIndex = 0;
     private final List<Band> bands;
     private float centerFrequency = 0;
@@ -45,6 +47,7 @@ public class Pirocast {
         Objects.requireNonNull(properties);
         this.bands = bands;
         this.properties = properties;
+        aprsDecoder = new Direwolf(line -> { System.out.println(line); });
         receiver = new RadioReceiver(properties.getControllerPort(), properties.getRdsPort(),
                 properties.getReceiverExecutablePath(), new RDSListener() {
                     @Override
@@ -88,7 +91,14 @@ public class Pirocast {
                         rdsStation = station;
                     }
                 });
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> receiver.stop()));
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                receiver.stop();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            aprsDecoder.stop();
+        }));
         centerFrequency = bands.get(0).getDefaultFreq();
         display = new SwingLcdDisplayEmulator(16, 2); // TODO configuration
         inputManager = new SwingInputManager((Window) display, 500, KeyEvent.VK_LEFT, KeyEvent.VK_ENTER,
@@ -206,6 +216,7 @@ public class Pirocast {
         display.setDisplayBacklight(true);
         state = MAIN;
         receiver.start();
+        aprsDecoder.start();
         resetTransientData();
 
         Band band = getCurrentBand();
@@ -217,6 +228,7 @@ public class Pirocast {
     public void stop() {
         state = OFF;
         receiver.stop();
+        aprsDecoder.stop();
         updateDisplay();
     }
 
