@@ -1,11 +1,13 @@
 package io.github.defective4.rpi.pirocast.ext;
 
+import static io.github.defective4.rpi.pirocast.settings.Setting.*;
+
 import java.io.IOException;
 import java.util.Objects;
 
 import io.github.defective4.rpi.pirocast.Band;
 import io.github.defective4.rpi.pirocast.Demodulator;
-import io.github.defective4.rpi.pirocast.settings.Setting;
+import io.github.defective4.rpi.pirocast.SoundEffectsPlayer;
 import io.github.defective4.sdr.msg.MessagePair;
 import io.github.defective4.sdr.msg.RawMessageSender;
 import io.github.defective4.sdr.rds.RDSListener;
@@ -32,10 +34,11 @@ public class RadioReceiver {
 
     public void initDefaultSettings(Band band) {
         setDemodulator(band.getDemodulator());
-        setGain((int) band.getSetting(Setting.E_GAIN));
-        setRDS((boolean) band.getSetting(Setting.D_RDS));
-        setDeemphasis((int) band.getSetting(Setting.F_DEEMP));
-        setStereo((boolean) band.getSetting(Setting.B_STEREO));
+        setGain((int) band.getSetting(E_GAIN));
+        setRDS((boolean) band.getSetting(D_RDS));
+        setDeemphasis((int) band.getSetting(F_DEEMP));
+        setStereo((boolean) band.getSetting(B_STEREO));
+        SoundEffectsPlayer.setEnabled((boolean) band.getSetting(A_BEEP));
     }
 
     public boolean isAlive() {

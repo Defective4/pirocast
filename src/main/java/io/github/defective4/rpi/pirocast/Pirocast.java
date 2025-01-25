@@ -244,8 +244,8 @@ public class Pirocast {
 
     public float getTuningStep() {
         Band band = getCurrentBand();
-        return Setting.A_TUNING_STEP.isApplicable(band.getDemodulator())
-                ? (int) band.getSetting(Setting.A_TUNING_STEP) * 1e3f
+        return Setting.B_TUNING_STEP.isApplicable(band.getDemodulator())
+                ? (int) band.getSetting(Setting.B_TUNING_STEP) * 1e3f
                 : 100e3f;
     }
 
@@ -434,6 +434,7 @@ public class Pirocast {
             }
             if (band.getDemodulator() == Demodulator.NFM && (boolean) band.getSetting(Setting.C_APRS)) startAPRS();
             else stopAPRS();
+            SoundEffectsPlayer.setEnabled((boolean) band.getSetting(Setting.A_BEEP));
         } else {
             Band band = getCurrentBand();
             Object currentVal = band.getSetting(set);
@@ -449,6 +450,7 @@ public class Pirocast {
             }
 
             switch (set) {
+                case A_BEEP -> SoundEffectsPlayer.setEnabled((boolean) band.getSetting(set));
                 case E_GAIN -> receiver.setGain((int) band.getSetting(set));
                 case D_RDS -> {
                     resetTransientData();
