@@ -1,6 +1,7 @@
 package io.github.defective4.rpi.pirocast;
 
 import static io.github.defective4.rpi.pirocast.ApplicationState.*;
+import static io.github.defective4.rpi.pirocast.SoundEffectsPlayer.*;
 
 import java.awt.Window;
 import java.awt.event.KeyEvent;
@@ -135,12 +136,16 @@ public class Pirocast {
             public void buttonClicked() {
                 if (state == SETTINGS) {
                     updateSettingValue(1);
+                    playClick();
                 }
             }
 
             @Override
             public void buttonPressed() {
-                if (state == MAIN) setFrequency(getCurrentFrequency() + getTuningStep());
+                if (state == MAIN) {
+                    setFrequency(getCurrentFrequency() + getTuningStep());
+                    playClick();
+                }
             }
         });
         inputManager.putInputListener(Button.PREV, new InputAdapter() {
@@ -149,12 +154,16 @@ public class Pirocast {
             public void buttonClicked() {
                 if (state == SETTINGS) {
                     updateSettingValue(-1);
+                    playClick();
                 }
             }
 
             @Override
             public void buttonPressed() {
-                if (state == MAIN) setFrequency(getCurrentFrequency() - getTuningStep());
+                if (state == MAIN) {
+                    setFrequency(getCurrentFrequency() - getTuningStep());
+                    playClick();
+                }
             }
         });
         inputManager.putInputListener(Button.OK, new InputAdapter() {
@@ -177,14 +186,24 @@ public class Pirocast {
             public void buttonLongClicked() {
                 switch (state) {
                     case OFF -> start();
-                    case MAIN -> stop();
+                    case MAIN, ERROR -> {
+                        stop();
+                        playLongClick();
+                    }
                     case SETTINGS -> {
                         state = MAIN;
                         updateDisplay();
+                        playLongClick();
                     }
                     default -> {}
                 }
             }
+
+            @Override
+            public void buttonPressed() {
+                if (state != OFF) playClick();
+            }
+
         });
         uiTimer.scheduleAtFixedRate(new TimerTask() {
 
