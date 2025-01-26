@@ -237,7 +237,7 @@ public class Pirocast {
 
     public Setting getCurrentSetting() {
         List<Setting> settings = new ArrayList<>();
-        settings.add(Setting.MODE);
+        settings.add(Setting.SOURCE);
         settings.addAll(getCurrentBand().getSettings());
         return settings.get(settingIndex % settings.size());
     }
@@ -350,7 +350,7 @@ public class Pirocast {
                 Setting setting = getCurrentSetting();
                 display.centerTextInLine(setting.getName(), 1);
                 String value;
-                if (setting == Setting.MODE) {
+                if (setting == Setting.SOURCE) {
                     value = getCurrentBand().getName();
                 } else {
                     value = setting.getFormatter().format(getCurrentBand().getSetting(setting));
@@ -406,7 +406,7 @@ public class Pirocast {
 
     private void updateSettingValue(int direction) {
         Setting set = getCurrentSetting();
-        if (set == Setting.MODE) {
+        if (set == Setting.SOURCE) {
             getCurrentBand().setLastFrequency(getCurrentFrequency());
             bandIndex += direction;
             if (bandIndex < 0) bandIndex = bands.size() - 1;

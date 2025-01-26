@@ -20,7 +20,7 @@ public enum Setting {
         if (v == 0) return "Off";
         return v * 25 + "u";
     }),
-    MODE("Mode", new SignalSource[0], null, null, null, null);
+    SOURCE("Source", new SignalSource[0], null, null, null, null);
 
     private final SignalSource[] applicableModes;
     private final Object defaultValue;
