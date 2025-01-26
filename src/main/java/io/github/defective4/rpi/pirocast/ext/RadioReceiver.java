@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.Objects;
 
 import io.github.defective4.rpi.pirocast.Band;
-import io.github.defective4.rpi.pirocast.Demodulator;
+import io.github.defective4.rpi.pirocast.SignalSource;
 import io.github.defective4.rpi.pirocast.SoundEffectsPlayer;
 import io.github.defective4.sdr.msg.MessagePair;
 import io.github.defective4.sdr.msg.RawMessageSender;
@@ -65,7 +65,7 @@ public class RadioReceiver {
         if (controller != null) controller.sendMessage(new MessagePair("demod_freq", freq));
     }
 
-    public void setDemodulator(Demodulator demodulator) {
+    public void setDemodulator(SignalSource demodulator) {
         if (controller != null) controller.sendMessage(new MessagePair("demod", demodulator.getId()));
     }
 

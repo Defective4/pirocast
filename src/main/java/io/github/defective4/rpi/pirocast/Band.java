@@ -8,18 +8,18 @@ import java.util.Objects;
 import io.github.defective4.rpi.pirocast.settings.Setting;
 
 public class Band {
-    private final Demodulator demodulator;
+    private final SignalSource demodulator;
     private final String extra;
     private float lastFrequency;
     private final float minFreq, maxFreq, defaultFreq;
     private final String name;
     private final Map<Setting, Object> settings = new LinkedHashMap<>();
 
-    public Band(String name, Demodulator demodulator, float minFreq, float maxFreq, float defaultFreq) {
+    public Band(String name, SignalSource demodulator, float minFreq, float maxFreq, float defaultFreq) {
         this(name, demodulator, minFreq, maxFreq, defaultFreq, null);
     }
 
-    public Band(String name, Demodulator demodulator, float minFreq, float maxFreq, float defaultFreq, String extra) {
+    public Band(String name, SignalSource demodulator, float minFreq, float maxFreq, float defaultFreq, String extra) {
         this.defaultFreq = defaultFreq;
         this.name = name;
         this.demodulator = demodulator;
@@ -34,7 +34,7 @@ public class Band {
         return defaultFreq;
     }
 
-    public Demodulator getDemodulator() {
+    public SignalSource getDemodulator() {
         return demodulator;
     }
 

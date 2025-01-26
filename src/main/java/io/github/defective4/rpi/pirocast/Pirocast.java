@@ -271,13 +271,13 @@ public class Pirocast {
             Band band = getCurrentBand();
             display.setDisplayBacklight(true);
             state = MAIN;
-            if (band.getDemodulator().getId() != Demodulator.UNDEFINED_ID) {
+            if (band.getDemodulator().getId() != SignalSource.UNDEFINED_ID) {
                 receiver.start();
                 receiver.initDefaultSettings(band);
-            } else if (band.getDemodulator() == Demodulator.AUX) {
+            } else if (band.getDemodulator() == SignalSource.AUX) {
                 auxLoopback.start();
             }
-            if (band.getDemodulator() == Demodulator.NFM && (boolean) band.getSetting(Setting.C_APRS)) startAPRS();
+            if (band.getDemodulator() == SignalSource.NFM && (boolean) band.getSetting(Setting.C_APRS)) startAPRS();
             aprsResampler.start();
             resetTransientData();
 
@@ -372,13 +372,13 @@ public class Pirocast {
                 float freq = getCurrentFrequency();
                 line1 = freq <= 1e6 ? Double.toString(getCurrentFrequency() / 1e3) + " KHz"
                         : Double.toString(getCurrentFrequency() / 1e6) + " MHz";
-                Demodulator mode = getCurrentBand().getDemodulator();
-                if (mode.getId() == Demodulator.UNDEFINED_ID) {
-                    if (mode == Demodulator.AUX) {
+                SignalSource mode = getCurrentBand().getDemodulator();
+                if (mode.getId() == SignalSource.UNDEFINED_ID) {
+                    if (mode == SignalSource.AUX) {
                         display.centerTextInLine("AUX", 1);
                     }
                 } else {
-                    if (mode == Demodulator.FM && rdsSignal) {
+                    if (mode == SignalSource.FM && rdsSignal) {
                         line1 += "*";
                         if (rdsStation != null) {
                             StringBuilder lineBuilder = display.generateCenteredText(rdsStation);
@@ -391,7 +391,7 @@ public class Pirocast {
                         if (rdsRadiotext != null) {
                             display.displayLineOfText(rdsRadiotext.substring(rdsRadiotextScrollIndex), 2);
                         }
-                    } else if (mode == Demodulator.NFM && !aprsQueue.isEmpty()) {
+                    } else if (mode == SignalSource.NFM && !aprsQueue.isEmpty()) {
                         String element = aprsQueue.peek().substring(aprsScrollIndex);
                         display.displayLineOfText(element, 2);
                     }
@@ -412,7 +412,7 @@ public class Pirocast {
             if (bandIndex < 0) bandIndex = bands.size() - 1;
             if (bandIndex >= bands.size()) bandIndex = 0;
             Band band = getCurrentBand();
-            if (band.getDemodulator().getId() == Demodulator.UNDEFINED_ID) {
+            if (band.getDemodulator().getId() == SignalSource.UNDEFINED_ID) {
                 receiver.stop();
                 switch (band.getDemodulator()) {
                     case NETWORK -> {
@@ -440,9 +440,9 @@ public class Pirocast {
                 }
                 receiver.initDefaultSettings(band);
                 setFrequency(band.getLastFrequency());
-                receiver.setRDS(band.getDemodulator() == Demodulator.FM && (boolean) band.getSetting(Setting.D_RDS));
+                receiver.setRDS(band.getDemodulator() == SignalSource.FM && (boolean) band.getSetting(Setting.D_RDS));
             }
-            if (band.getDemodulator() == Demodulator.NFM && (boolean) band.getSetting(Setting.C_APRS)) startAPRS();
+            if (band.getDemodulator() == SignalSource.NFM && (boolean) band.getSetting(Setting.C_APRS)) startAPRS();
             else stopAPRS();
             SoundEffectsPlayer.setEnabled((boolean) band.getSetting(Setting.A_BEEP));
         } else {
