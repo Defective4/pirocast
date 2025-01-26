@@ -46,7 +46,7 @@ public class Pirocast {
     private int aprsScrollIndex = 0;
     private final AUXLoopback auxLoopback = new AUXLoopback();
     private int bandIndex = 0;
-    private final List<Band> bands;
+    private final List<Source> bands;
     private float centerFrequency = 0;
     private final TextDisplay display;
     private final FFMpegPlayer ffmpeg = new FFMpegPlayer();
@@ -62,7 +62,7 @@ public class Pirocast {
     private ApplicationState state = OFF;
     private final Timer uiTimer = new Timer(true);
 
-    public Pirocast(List<Band> bands, AppProperties properties) {
+    public Pirocast(List<Source> bands, AppProperties properties) {
         if (bands.isEmpty()) throw new IllegalArgumentException("Band list cannot be empty");
         Objects.requireNonNull(properties);
         this.bands = bands;
@@ -230,7 +230,7 @@ public class Pirocast {
         }, 1000, 1000);
     }
 
-    public Band getCurrentBand() {
+    public Source getCurrentBand() {
         return bands.get(bandIndex);
     }
 
@@ -246,14 +246,14 @@ public class Pirocast {
     }
 
     public float getTuningStep() {
-        Band band = getCurrentBand();
+        Source band = getCurrentBand();
         return Setting.B_TUNING_STEP.isApplicable(band.getDemodulator())
                 ? (int) band.getSetting(Setting.B_TUNING_STEP) * 1e3f
                 : 100e3f;
     }
 
     public void setFrequency(float freq) {
-        Band band = getCurrentBand();
+        Source band = getCurrentBand();
         if (freq < band.getMinFreq()) freq = band.getMinFreq();
         if (freq > band.getMaxFreq()) freq = band.getMaxFreq();
         float diff = Math.abs(freq - centerFrequency);
@@ -271,7 +271,7 @@ public class Pirocast {
 
     public void start() {
         try {
-            Band band = getCurrentBand();
+            Source band = getCurrentBand();
             display.setDisplayBacklight(true);
             state = MAIN;
             switch (band.getDemodulator()) {
@@ -418,7 +418,7 @@ public class Pirocast {
             bandIndex += direction;
             if (bandIndex < 0) bandIndex = bands.size() - 1;
             if (bandIndex >= bands.size()) bandIndex = 0;
-            Band band = getCurrentBand();
+            Source band = getCurrentBand();
             if (band.getDemodulator().getId() == SignalMode.UNDEFINED_ID) {
                 receiver.stop();
                 switch (band.getDemodulator()) {
@@ -460,7 +460,7 @@ public class Pirocast {
             else stopAPRS();
             SoundEffectsPlayer.setEnabled((boolean) band.getSetting(Setting.A_BEEP));
         } else {
-            Band band = getCurrentBand();
+            Source band = getCurrentBand();
             Object currentVal = band.getSetting(set);
             if (currentVal instanceof Integer i) {
                 int newVal = i + direction;

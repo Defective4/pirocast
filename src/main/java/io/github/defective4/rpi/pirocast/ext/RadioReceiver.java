@@ -5,7 +5,7 @@ import static io.github.defective4.rpi.pirocast.settings.Setting.*;
 import java.io.IOException;
 import java.util.Objects;
 
-import io.github.defective4.rpi.pirocast.Band;
+import io.github.defective4.rpi.pirocast.Source;
 import io.github.defective4.rpi.pirocast.SignalMode;
 import io.github.defective4.rpi.pirocast.SoundEffectsPlayer;
 import io.github.defective4.sdr.msg.MessagePair;
@@ -32,7 +32,7 @@ public class RadioReceiver {
         this.rdsListener = rdsListener;
     }
 
-    public void initDefaultSettings(Band band) {
+    public void initDefaultSettings(Source band) {
         setDemodulator(band.getDemodulator());
         setGain((int) band.getSetting(E_GAIN));
         setRDS((boolean) band.getSetting(D_RDS));
