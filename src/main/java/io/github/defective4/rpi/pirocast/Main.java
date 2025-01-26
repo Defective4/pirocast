@@ -15,7 +15,7 @@ public class Main {
                             new Source("AUX", SignalMode.AUX, 0, 0, 0),
                             new Source("MP3", SignalMode.FILE, 0, 0, 0, "/home/defective/Muzyka2")),
                     props);
-            cast.start();
+//            cast.start();
         } catch (Exception e) {
             e.printStackTrace();
         }

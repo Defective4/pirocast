@@ -91,7 +91,7 @@ public class SwingLcdDisplayEmulator extends JFrame implements TextDisplay {
 
     @Override
     public void setDisplayBacklight(boolean enabled) {
-        for (JLabel l : labels) l.setForeground(enabled ? Color.white : new Color(0, 0, 0, 0));
+        for (JLabel l : labels) l.setForeground(enabled ? Color.white : new Color(7, 13, 50));
         panel.setBackground(enabled ? bg : new Color(3, 6, 26));
         backlit = enabled;
     }

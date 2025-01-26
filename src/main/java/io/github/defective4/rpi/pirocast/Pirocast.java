@@ -8,7 +8,10 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Queue;
@@ -57,20 +60,24 @@ public class Pirocast {
     private int fileScrollIndex = 0;
     private final InputManager inputManager;
     private boolean mediaError;
+    private long offLightTime = 0;
     private float offsetFrequency = 0;
     private final AppProperties properties;
     private String rdsRadiotext, rdsStation;
-    private int rdsRadiotextScrollIndex = 0;
 
+    private int rdsRadiotextScrollIndex = 0;
     private boolean rdsSignal, ta, tp, rdsStereo;
     private final RadioReceiver receiver;
     private int settingIndex = 0;
     private ApplicationState state = OFF;
+    private final DateFormat timeFormat, dateFormat;
     private final Timer uiTimer = new Timer(true);
 
     public Pirocast(List<Source> bands, AppProperties properties) {
         if (bands.isEmpty()) throw new IllegalArgumentException("Band list cannot be empty");
         Objects.requireNonNull(properties);
+        timeFormat = new SimpleDateFormat(properties.getTimeFormat());
+        dateFormat = new SimpleDateFormat(properties.getDateFormat());
         this.bands = bands;
         this.properties = properties;
         fileManager = new FileManager((index, file) -> {
@@ -163,6 +170,9 @@ public class Pirocast {
                 if (state == SETTINGS) {
                     updateSettingValue(1);
                     playClick();
+                } else if (state == OFF) {
+                    offLightTime = System.currentTimeMillis();
+                    display.setDisplayBacklight(!display.getDisplayBacklight());
                 }
             }
 
@@ -178,6 +188,9 @@ public class Pirocast {
                 if (state == SETTINGS) {
                     updateSettingValue(-1);
                     playClick();
+                } else if (state == OFF) {
+                    offLightTime = System.currentTimeMillis();
+                    display.setDisplayBacklight(!display.getDisplayBacklight());
                 }
             }
 
@@ -190,6 +203,10 @@ public class Pirocast {
             @Override
             public void buttonClicked() {
                 switch (state) {
+                    case OFF -> {
+                        offLightTime = System.currentTimeMillis();
+                        display.setDisplayBacklight(!display.getDisplayBacklight());
+                    }
                     case SETTINGS -> {
                         nextSetting();
                         updateDisplay();
@@ -410,10 +427,13 @@ public class Pirocast {
                 display.displayLineOfText(builder.toString(), 2);
             }
             case OFF -> {
-                if (display.getDisplayBacklight()) {
+                if (display.getDisplayBacklight() && System.currentTimeMillis() - offLightTime > 5000) {
                     display.clearDisplay();
                     display.setDisplayBacklight(false);
                 }
+                Date now = new Date(System.currentTimeMillis());
+                display.centerTextInLine(timeFormat.format(now), 1);
+                display.centerTextInLine(dateFormat.format(now), 2);
             }
             case MAIN -> {
                 display.clearDisplay();
