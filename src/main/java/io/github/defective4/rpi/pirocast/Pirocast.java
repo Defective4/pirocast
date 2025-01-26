@@ -54,14 +54,15 @@ public class Pirocast {
     private final TextDisplay display;
     private final FFMpegPlayer ffmpeg = new FFMpegPlayer();
     private final FileManager fileManager;
+    private int fileScrollIndex = 0;
     private final InputManager inputManager;
     private boolean mediaError;
     private float offsetFrequency = 0;
     private final AppProperties properties;
     private String rdsRadiotext, rdsStation;
     private int rdsRadiotextScrollIndex = 0;
-    private boolean rdsSignal, ta, tp, rdsStereo;
 
+    private boolean rdsSignal, ta, tp, rdsStereo;
     private final RadioReceiver receiver;
     private int settingIndex = 0;
     private ApplicationState state = OFF;
@@ -73,6 +74,7 @@ public class Pirocast {
         this.bands = bands;
         this.properties = properties;
         fileManager = new FileManager((index, file) -> {
+            fileScrollIndex = 0;
             if (getCurrentSource().getMode() == SignalMode.FILE) {
                 ffmpeg.stop();
                 mediaError = false;
@@ -140,6 +142,7 @@ public class Pirocast {
                 e.printStackTrace();
             }
             stopAPRS();
+            ffmpeg.stop();
         }));
         centerFrequency = bands.get(0).getDefaultFreq();
         display = new SwingLcdDisplayEmulator(16, 2); // TODO configuration
@@ -229,7 +232,15 @@ public class Pirocast {
                 Source src = getCurrentSource();
                 if (src.getMode() == SignalMode.FILE) {
                     File srcDir = new File(src.getExtra());
+                    File current = fileManager.getSelectedFile();
                     if (!srcDir.isDirectory() || fileManager.isMissingDirectory()) fileManager.listAudioFiles(srcDir);
+                    if (current != null) {
+                        String name = current.getName();
+                        int dotIndex = name.lastIndexOf('.');
+                        if (dotIndex >= 0) name = name.substring(0, dotIndex);
+                        fileScrollIndex++;
+                        if (name.length() - fileScrollIndex < display.getColumns() - 4) fileScrollIndex = 0;
+                    }
                 }
                 updateDisplay();
                 if (rdsRadiotext != null) {
@@ -448,7 +459,12 @@ public class Pirocast {
                             String fileName = fileManager.getSelectedFile().getName();
                             int dotIndex = fileName.lastIndexOf('.');
                             if (dotIndex >= 0) fileName = fileName.substring(0, dotIndex);
-                            line2 = display.generateCenteredText(fileName);
+                            line2 = display
+                                    .generateCenteredText(fileName
+                                            .substring(fileScrollIndex,
+                                                    Math
+                                                            .min(fileName.length(),
+                                                                    fileScrollIndex + display.getColumns() - 4)));
                             line2.setCharAt(0, '<');
                             line2.setCharAt(line2.length() - 1, '>');
                         } else {
