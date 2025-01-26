@@ -427,7 +427,8 @@ public class Pirocast {
                             line2.setCharAt(0, '<');
                             line2.setCharAt(line2.length() - 1, '>');
                         } else {
-                            line2 = display.generateCenteredText("No File");
+                            line2 = display
+                                    .generateCenteredText(fileManager.isMissingDirectory() ? "No Media" : "No File");
                         }
                     }
                     case AUX -> {

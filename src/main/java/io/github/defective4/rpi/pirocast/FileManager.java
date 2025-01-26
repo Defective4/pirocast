@@ -1,12 +1,17 @@
 package io.github.defective4.rpi.pirocast;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
 public class FileManager {
+
+    public static interface UpdateListener {
+
+    }
+
+    private boolean error;
     private final List<File> library = new ArrayList<>();
     private int selectedFile = 0;
 
@@ -18,12 +23,18 @@ public class FileManager {
         return !library.isEmpty();
     }
 
-    public void listAudioFiles(File directory) throws IOException {
-        if (!directory.isDirectory()) throw new IOException("Not a directory");
-        List<File> files = recursiveAudioList(directory);
+    public boolean isMissingDirectory() {
+        return error;
+    }
+
+    public void listAudioFiles(File directory) {
         library.clear();
         selectedFile = 0;
-        library.addAll(files);
+        error = false;
+        if (directory.isDirectory()) {
+            List<File> files = recursiveAudioList(directory);
+            library.addAll(files);
+        } else error = true;
     }
 
     public void nextFile(int direction) {
