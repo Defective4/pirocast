@@ -14,7 +14,7 @@ public class Main {
                                     new Band("AM", SignalSource.AM, 0, 27e6f, 95e5f),
                                     new Band("NFM", SignalSource.NFM, 144e6f, 146e6f, 1448e5f),
                                     new Band("AUX", SignalSource.AUX, 0, 0, 0),
-                                    new Band("NET", SignalSource.NETWORK, 0, 0, 0, "https://localhost:8080/test.mp3")),
+                                    new Band("NET", SignalSource.NETWORK, 0, 0, 0, "http://localhost:8080/test.mp3")),
                     props);
 //            cast.start();
         } catch (Exception e) {

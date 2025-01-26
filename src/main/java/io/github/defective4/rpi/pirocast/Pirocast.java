@@ -5,6 +5,7 @@ import static io.github.defective4.rpi.pirocast.SoundEffectsPlayer.*;
 
 import java.awt.Window;
 import java.awt.event.KeyEvent;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -21,6 +22,7 @@ import io.github.defective4.rpi.pirocast.display.SwingLcdDisplayEmulator;
 import io.github.defective4.rpi.pirocast.display.TextDisplay;
 import io.github.defective4.rpi.pirocast.ext.AUXLoopback;
 import io.github.defective4.rpi.pirocast.ext.Direwolf;
+import io.github.defective4.rpi.pirocast.ext.FFMpegPlayer;
 import io.github.defective4.rpi.pirocast.ext.RadioReceiver;
 import io.github.defective4.rpi.pirocast.ext.WaveResamplerServer;
 import io.github.defective4.rpi.pirocast.input.Button;
@@ -47,6 +49,7 @@ public class Pirocast {
     private final List<Band> bands;
     private float centerFrequency = 0;
     private final TextDisplay display;
+    private final FFMpegPlayer ffmpeg = new FFMpegPlayer();
     private final InputManager inputManager;
     private float offsetFrequency = 0;
     private final AppProperties properties;
@@ -54,8 +57,8 @@ public class Pirocast {
     private int rdsRadiotextScrollIndex = 0;
     private boolean rdsSignal, ta, tp, rdsStereo;
     private final RadioReceiver receiver;
-    private int settingIndex = 0;
 
+    private int settingIndex = 0;
     private ApplicationState state = OFF;
     private final Timer uiTimer = new Timer(true);
 
@@ -271,11 +274,12 @@ public class Pirocast {
             Band band = getCurrentBand();
             display.setDisplayBacklight(true);
             state = MAIN;
-            if (band.getDemodulator().getId() != SignalSource.UNDEFINED_ID) {
-                receiver.start();
-                receiver.initDefaultSettings(band);
-            } else if (band.getDemodulator() == SignalSource.AUX) {
-                auxLoopback.start();
+            switch (band.getDemodulator()) {
+                case AUX -> auxLoopback.start();
+                default -> {
+                    receiver.start();
+                    receiver.initDefaultSettings(band);
+                }
             }
             if (band.getDemodulator() == SignalSource.NFM && (boolean) band.getSetting(Setting.C_APRS)) startAPRS();
             aprsResampler.start();
@@ -294,6 +298,7 @@ public class Pirocast {
         state = OFF;
         receiver.stop();
         auxLoopback.close();
+        ffmpeg.stop();
         stopAPRS();
         aprsResampler.stop();
         updateDisplay();
@@ -398,9 +403,7 @@ public class Pirocast {
                     display.centerTextInLine(line1, 1);
                 }
             }
-            default -> {
-
-            }
+            default -> {}
         }
     }
 
@@ -417,9 +420,15 @@ public class Pirocast {
                 switch (band.getDemodulator()) {
                     case NETWORK -> {
                         auxLoopback.close();
-                        // TOOD
+                        try {
+                            ffmpeg.start(new URI(band.getExtra()).toURL());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            raiseError();
+                        }
                     }
                     case AUX -> {
+                        ffmpeg.stop();
                         try {
                             auxLoopback.start();
                         } catch (LineUnavailableException e) {
@@ -432,6 +441,7 @@ public class Pirocast {
 
             } else {
                 auxLoopback.close();
+                ffmpeg.stop();
                 try {
                     receiver.start();
                 } catch (Exception e) {

@@ -38,6 +38,10 @@ public class Band {
         return demodulator;
     }
 
+    public String getExtra() {
+        return extra;
+    }
+
     public float getLastFrequency() {
         return lastFrequency;
     }
