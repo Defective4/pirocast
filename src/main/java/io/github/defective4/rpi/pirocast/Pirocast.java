@@ -275,6 +275,7 @@ public class Pirocast {
             display.setDisplayBacklight(true);
             state = MAIN;
             switch (band.getDemodulator()) {
+                case NETWORK -> ffmpeg.start(new URI(band.getExtra()).toURL());
                 case AUX -> auxLoopback.start();
                 default -> {
                     receiver.start();
@@ -381,6 +382,9 @@ public class Pirocast {
                 if (mode.getId() == SignalSource.UNDEFINED_ID) {
                     if (mode == SignalSource.AUX) {
                         display.centerTextInLine("AUX", 1);
+                    } else if (mode == SignalSource.NETWORK) {
+                        display.centerTextInLine("Internet Radio", 1);
+                        display.centerTextInLine(getCurrentBand().getName(), 2);
                     }
                 } else {
                     if (mode == SignalSource.FM && rdsSignal) {
