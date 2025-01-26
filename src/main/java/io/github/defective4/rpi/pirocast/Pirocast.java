@@ -254,8 +254,8 @@ public class Pirocast {
 
     public void setFrequency(float freq) {
         Source band = getCurrentBand();
-        if (freq < band.getMinFreq()) freq = band.getMinFreq();
-        if (freq > band.getMaxFreq()) freq = band.getMaxFreq();
+        if (freq < band.getMinFreq()) freq = band.getMaxFreq();
+        if (freq > band.getMaxFreq()) freq = band.getMinFreq();
         float diff = Math.abs(freq - centerFrequency);
         if (diff > 1e6) {
             offsetFrequency = 0;
