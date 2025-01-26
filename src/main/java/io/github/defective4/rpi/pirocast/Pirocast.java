@@ -5,6 +5,7 @@ import static io.github.defective4.rpi.pirocast.SoundEffectsPlayer.*;
 
 import java.awt.Window;
 import java.awt.event.KeyEvent;
+import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +17,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioFormat.Encoding;
-import javax.sound.sampled.LineUnavailableException;
 
 import io.github.defective4.rpi.pirocast.display.SwingLcdDisplayEmulator;
 import io.github.defective4.rpi.pirocast.display.TextDisplay;
@@ -50,6 +50,7 @@ public class Pirocast {
     private float centerFrequency = 0;
     private final TextDisplay display;
     private final FFMpegPlayer ffmpeg = new FFMpegPlayer();
+    private final FileManager fileManager = new FileManager();
     private final InputManager inputManager;
     private float offsetFrequency = 0;
     private final AppProperties properties;
@@ -275,6 +276,7 @@ public class Pirocast {
             display.setDisplayBacklight(true);
             state = MAIN;
             switch (band.getDemodulator()) {
+                case FILE -> fileManager.listAudioFiles(new File(band.getExtra()));
                 case NETWORK -> ffmpeg.start(new URI(band.getExtra()).toURL());
                 case AUX -> auxLoopback.start();
                 default -> {
@@ -374,37 +376,68 @@ public class Pirocast {
             }
             case MAIN -> {
                 display.clearDisplay();
-                String line1;
-                float freq = getCurrentFrequency();
-                line1 = freq <= 1e6 ? Double.toString(getCurrentFrequency() / 1e3) + " KHz"
-                        : Double.toString(getCurrentFrequency() / 1e6) + " MHz";
                 SignalMode mode = getCurrentBand().getDemodulator();
-                if (mode.getId() == SignalMode.UNDEFINED_ID) {
-                    if (mode == SignalMode.AUX) {
-                        display.centerTextInLine("AUX", 1);
-                    } else if (mode == SignalMode.NETWORK) {
-                        display.centerTextInLine("Internet Radio", 1);
-                        display.centerTextInLine(getCurrentBand().getName(), 2);
-                    }
-                } else {
-                    if (mode == SignalMode.FM && rdsSignal) {
-                        line1 += "*";
-                        if (rdsStation != null) {
-                            StringBuilder lineBuilder = display.generateCenteredText(rdsStation);
-                            if (ta) lineBuilder.setCharAt(lineBuilder.length() - 2, '\1');
-                            if (tp) lineBuilder.setCharAt(lineBuilder.length() - 1, '\2');
-                            if (rdsStereo && (boolean) getCurrentBand().getSetting(Setting.B_STEREO))
-                                lineBuilder.setCharAt(0, 'S');
-                            line1 = lineBuilder.toString();
+                {
+                    float freq = getCurrentFrequency();
+                    String freqS = freq <= 1e6 ? Double.toString(getCurrentFrequency() / 1e3) + " KHz"
+                            : Double.toString(getCurrentFrequency() / 1e6) + " MHz";
+                    if (rdsSignal && mode == SignalMode.FM) freqS = freqS + "*";
+                    StringBuilder line2 = display.generateCenteredText(freqS);
+                    line2.setCharAt(0, '<');
+                    line2.setCharAt(line2.length() - 1, '>');
+                    StringBuilder line1 = display.generateCenteredText(mode.name());
+
+                    switch (mode) {
+                        case NFM -> {
+                            if (!aprsQueue.isEmpty()) {
+                                line1 = new StringBuilder(aprsQueue.peek().substring(aprsScrollIndex));
+                            }
                         }
-                        if (rdsRadiotext != null) {
-                            display.displayLineOfText(rdsRadiotext.substring(rdsRadiotextScrollIndex), 2);
+                        case FM -> {
+                            if (rdsSignal) {
+                                if (rdsStation != null) {
+                                    line1 = display.generateCenteredText(rdsStation);
+                                }
+
+                                if (rdsRadiotext != null) {
+                                    StringBuilder rtx = new StringBuilder(
+                                            rdsRadiotext.substring(rdsRadiotextScrollIndex));
+                                    if (rdsStation == null) line1 = rtx;
+                                    else line2 = rtx;
+                                }
+
+                                if (rdsStation != null || rdsRadiotext == null) {
+                                    if (rdsStereo) line1.setCharAt(0, 'S');
+                                    if (ta) line1.setCharAt(line1.length() - 2, '\1');
+                                    if (tp) line1.setCharAt(line1.length() - 1, '\2');
+                                }
+                            }
                         }
-                    } else if (mode == SignalMode.NFM && !aprsQueue.isEmpty()) {
-                        String element = aprsQueue.peek().substring(aprsScrollIndex);
-                        display.displayLineOfText(element, 2);
+                        case FILE -> {
+                            if (fileManager.hasFiles()) {
+                                String fileName = fileManager.getSelectedFile().getName();
+                                int dotIndex = fileName.lastIndexOf('.');
+                                if (dotIndex >= 0) fileName = fileName.substring(0, dotIndex);
+                                line2 = display.generateCenteredText(fileName);
+                                line2.setCharAt(0, '<');
+                                line2.setCharAt(line2.length() - 1, '>');
+                            } else {
+                                line2 = display.generateCenteredText("No File");
+                            }
+                        }
+                        case AUX -> {
+                            line2 = new StringBuilder();
+                            line1 = display.generateCenteredText("AUX In");
+                        }
+                        case NETWORK -> {
+                            line1 = display.generateCenteredText("Internet Radio");
+                            line2 = display.generateCenteredText(getCurrentBand().getName());
+                        }
+                        default -> {}
                     }
-                    display.centerTextInLine(line1, 1);
+
+                    display.displayLineOfText(line1.toString(), 1);
+                    display.displayLineOfText(line2.toString(), 2);
                 }
             }
             default -> {}
@@ -421,26 +454,18 @@ public class Pirocast {
             Source band = getCurrentBand();
             if (band.getDemodulator().getId() == SignalMode.UNDEFINED_ID) {
                 receiver.stop();
-                switch (band.getDemodulator()) {
-                    case NETWORK -> {
-                        auxLoopback.close();
-                        try {
-                            ffmpeg.start(new URI(band.getExtra()).toURL());
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            raiseError();
-                        }
+                ffmpeg.stop();
+                auxLoopback.close();
+                try {
+                    switch (band.getDemodulator()) {
+                        case FILE -> fileManager.listAudioFiles(new File(band.getExtra()));
+                        case NETWORK -> ffmpeg.start(new URI(band.getExtra()).toURL());
+                        case AUX -> auxLoopback.start();
+                        default -> {}
                     }
-                    case AUX -> {
-                        ffmpeg.stop();
-                        try {
-                            auxLoopback.start();
-                        } catch (LineUnavailableException e) {
-                            e.printStackTrace();
-                            raiseError();
-                        }
-                    }
-                    default -> {}
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    raiseError();
                 }
 
             } else {

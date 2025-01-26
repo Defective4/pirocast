@@ -1,7 +1,7 @@
 package io.github.defective4.rpi.pirocast;
 
 public enum SignalMode {
-    AM(0), AUX(-1), FM(1), NETWORK(-1), NFM(2);
+    AM(0), AUX(-1), FILE(-1), FM(1), NETWORK(-1), NFM(2);
 
     public static final int UNDEFINED_ID = -1;
     private final int id;
