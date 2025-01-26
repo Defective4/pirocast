@@ -1,41 +1,41 @@
 package io.github.defective4.rpi.pirocast.settings;
 
-import io.github.defective4.rpi.pirocast.SignalSource;
+import io.github.defective4.rpi.pirocast.SignalMode;
 
 public enum Setting {
-    A_BEEP("Beep", SignalSource.values(), true, null, null, new OnOffSettingFormatter()),
-    B_STEREO("Stereo", SignalSource.FM, true, null, null, new OnOffSettingFormatter()),
-    B_TUNING_STEP("Tuning Step", new SignalSource[] {
-            SignalSource.AM, SignalSource.NFM
+    A_BEEP("Beep", SignalMode.values(), true, null, null, new OnOffSettingFormatter()),
+    B_STEREO("Stereo", SignalMode.FM, true, null, null, new OnOffSettingFormatter()),
+    B_TUNING_STEP("Tuning Step", new SignalMode[] {
+            SignalMode.AM, SignalMode.NFM
     }, 10, 1, 100, val -> val + " KHz"),
-    C_APRS("APRS", SignalSource.NFM, true, null, null, new OnOffSettingFormatter()),
-    D_RDS("RDS", SignalSource.FM, true, null, null, new OnOffSettingFormatter()),
-    E_GAIN("RF Gain", new SignalSource[] {
-            SignalSource.AM, SignalSource.FM, SignalSource.NFM
+    C_APRS("APRS", SignalMode.NFM, true, null, null, new OnOffSettingFormatter()),
+    D_RDS("RDS", SignalMode.FM, true, null, null, new OnOffSettingFormatter()),
+    E_GAIN("RF Gain", new SignalMode[] {
+            SignalMode.AM, SignalMode.FM, SignalMode.NFM
     }, 10, 0, 49, null),
-    F_DEEMP("Deemphasis", new SignalSource[] {
-            SignalSource.FM, SignalSource.NFM
+    F_DEEMP("Deemphasis", new SignalMode[] {
+            SignalMode.FM, SignalMode.NFM
     }, 2, 0, 3, val -> {
         int v = (int) val;
         if (v == 0) return "Off";
         return v * 25 + "u";
     }),
-    SOURCE("Source", new SignalSource[0], null, null, null, null);
+    SOURCE("Source", new SignalMode[0], null, null, null, null);
 
-    private final SignalSource[] applicableModes;
+    private final SignalMode[] applicableModes;
     private final Object defaultValue;
     private final SettingFormatter formatter;
     private final Object minValue, maxValue;
     private final String name;
 
-    private Setting(String name, SignalSource applicableMode, Object defaultValue, Object minValue, Object maxValue,
+    private Setting(String name, SignalMode applicableMode, Object defaultValue, Object minValue, Object maxValue,
             SettingFormatter formatter) {
-        this(name, new SignalSource[] {
+        this(name, new SignalMode[] {
                 applicableMode
         }, defaultValue, minValue, maxValue, formatter);
     }
 
-    private Setting(String name, SignalSource[] applicableModes, Object defaultValue, Object minValue, Object maxValue,
+    private Setting(String name, SignalMode[] applicableModes, Object defaultValue, Object minValue, Object maxValue,
             SettingFormatter formatter) {
         this.applicableModes = applicableModes;
         this.defaultValue = defaultValue;
@@ -45,7 +45,7 @@ public enum Setting {
         this.formatter = formatter == null ? new DefaultSettingFormatter() : formatter;
     }
 
-    public SignalSource[] getApplicableModes() {
+    public SignalMode[] getApplicableModes() {
         return applicableModes;
     }
 
@@ -69,8 +69,8 @@ public enum Setting {
         return name;
     }
 
-    public boolean isApplicable(SignalSource demod) {
-        for (SignalSource d : getApplicableModes()) if (d == demod) return true;
+    public boolean isApplicable(SignalMode demod) {
+        for (SignalMode d : getApplicableModes()) if (d == demod) return true;
         return false;
     }
 
