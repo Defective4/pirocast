@@ -414,12 +414,22 @@ public class Pirocast {
             Band band = getCurrentBand();
             if (band.getDemodulator().getId() == Demodulator.UNDEFINED_ID) {
                 receiver.stop();
-                try {
-                    auxLoopback.start();
-                } catch (LineUnavailableException e) {
-                    e.printStackTrace();
-                    raiseError();
+                switch (band.getDemodulator()) {
+                    case NETWORK -> {
+                        auxLoopback.close();
+                        // TOOD
+                    }
+                    case AUX -> {
+                        try {
+                            auxLoopback.start();
+                        } catch (LineUnavailableException e) {
+                            e.printStackTrace();
+                            raiseError();
+                        }
+                    }
+                    default -> {}
                 }
+
             } else {
                 auxLoopback.close();
                 try {

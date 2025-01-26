@@ -9,17 +9,23 @@ import io.github.defective4.rpi.pirocast.settings.Setting;
 
 public class Band {
     private final Demodulator demodulator;
+    private final String extra;
     private float lastFrequency;
     private final float minFreq, maxFreq, defaultFreq;
     private final String name;
     private final Map<Setting, Object> settings = new LinkedHashMap<>();
 
     public Band(String name, Demodulator demodulator, float minFreq, float maxFreq, float defaultFreq) {
+        this(name, demodulator, minFreq, maxFreq, defaultFreq, null);
+    }
+
+    public Band(String name, Demodulator demodulator, float minFreq, float maxFreq, float defaultFreq, String extra) {
         this.defaultFreq = defaultFreq;
         this.name = name;
         this.demodulator = demodulator;
         this.minFreq = minFreq;
         this.maxFreq = maxFreq;
+        this.extra = extra;
         lastFrequency = defaultFreq;
         initDefaults();
     }
