@@ -377,68 +377,65 @@ public class Pirocast {
             case MAIN -> {
                 display.clearDisplay();
                 SignalMode mode = getCurrentBand().getDemodulator();
-                {
-                    float freq = getCurrentFrequency();
-                    String freqS = freq <= 1e6 ? Double.toString(getCurrentFrequency() / 1e3) + " KHz"
-                            : Double.toString(getCurrentFrequency() / 1e6) + " MHz";
-                    if (rdsSignal && mode == SignalMode.FM) freqS = freqS + "*";
-                    StringBuilder line2 = display.generateCenteredText(freqS);
-                    line2.setCharAt(0, '<');
-                    line2.setCharAt(line2.length() - 1, '>');
-                    StringBuilder line1 = display.generateCenteredText(mode.name());
+                float freq = getCurrentFrequency();
+                String freqS = freq <= 1e6 ? Double.toString(getCurrentFrequency() / 1e3) + " KHz"
+                        : Double.toString(getCurrentFrequency() / 1e6) + " MHz";
+                if (rdsSignal && mode == SignalMode.FM) freqS = freqS + "*";
+                StringBuilder line2 = display.generateCenteredText(freqS);
+                line2.setCharAt(0, '<');
+                line2.setCharAt(line2.length() - 1, '>');
+                StringBuilder line1 = display.generateCenteredText(mode.name());
 
-                    switch (mode) {
-                        case NFM -> {
-                            if (!aprsQueue.isEmpty()) {
-                                line1 = new StringBuilder(aprsQueue.peek().substring(aprsScrollIndex));
-                            }
+                switch (mode) {
+                    case NFM -> {
+                        if (!aprsQueue.isEmpty()) {
+                            line1 = new StringBuilder(aprsQueue.peek().substring(aprsScrollIndex));
                         }
-                        case FM -> {
-                            if (rdsSignal) {
-                                if (rdsStation != null) {
-                                    line1 = display.generateCenteredText(rdsStation);
-                                }
-
-                                if (rdsRadiotext != null) {
-                                    StringBuilder rtx = new StringBuilder(
-                                            rdsRadiotext.substring(rdsRadiotextScrollIndex));
-                                    if (rdsStation == null) line1 = rtx;
-                                    else line2 = rtx;
-                                }
-
-                                if (rdsStation != null || rdsRadiotext == null) {
-                                    if (rdsStereo) line1.setCharAt(0, 'S');
-                                    if (ta) line1.setCharAt(line1.length() - 2, '\1');
-                                    if (tp) line1.setCharAt(line1.length() - 1, '\2');
-                                }
-                            }
-                        }
-                        case FILE -> {
-                            if (fileManager.hasFiles()) {
-                                String fileName = fileManager.getSelectedFile().getName();
-                                int dotIndex = fileName.lastIndexOf('.');
-                                if (dotIndex >= 0) fileName = fileName.substring(0, dotIndex);
-                                line2 = display.generateCenteredText(fileName);
-                                line2.setCharAt(0, '<');
-                                line2.setCharAt(line2.length() - 1, '>');
-                            } else {
-                                line2 = display.generateCenteredText("No File");
-                            }
-                        }
-                        case AUX -> {
-                            line2 = new StringBuilder();
-                            line1 = display.generateCenteredText("AUX In");
-                        }
-                        case NETWORK -> {
-                            line1 = display.generateCenteredText("Internet Radio");
-                            line2 = display.generateCenteredText(getCurrentBand().getName());
-                        }
-                        default -> {}
                     }
+                    case FM -> {
+                        if (rdsSignal) {
+                            if (rdsStation != null) {
+                                line1 = display.generateCenteredText(rdsStation);
+                            }
 
-                    display.displayLineOfText(line1.toString(), 1);
-                    display.displayLineOfText(line2.toString(), 2);
+                            if (rdsRadiotext != null) {
+                                StringBuilder rtx = new StringBuilder(rdsRadiotext.substring(rdsRadiotextScrollIndex));
+                                if (rdsStation == null) line1 = rtx;
+                                else line2 = rtx;
+                            }
+
+                            if (rdsStation != null || rdsRadiotext == null) {
+                                if (rdsStereo) line1.setCharAt(0, 'S');
+                                if (ta) line1.setCharAt(line1.length() - 2, '\1');
+                                if (tp) line1.setCharAt(line1.length() - 1, '\2');
+                            }
+                        }
+                    }
+                    case FILE -> {
+                        if (fileManager.hasFiles()) {
+                            String fileName = fileManager.getSelectedFile().getName();
+                            int dotIndex = fileName.lastIndexOf('.');
+                            if (dotIndex >= 0) fileName = fileName.substring(0, dotIndex);
+                            line2 = display.generateCenteredText(fileName);
+                            line2.setCharAt(0, '<');
+                            line2.setCharAt(line2.length() - 1, '>');
+                        } else {
+                            line2 = display.generateCenteredText("No File");
+                        }
+                    }
+                    case AUX -> {
+                        line2 = new StringBuilder();
+                        line1 = display.generateCenteredText("AUX In");
+                    }
+                    case NETWORK -> {
+                        line1 = display.generateCenteredText("Internet Radio");
+                        line2 = display.generateCenteredText(getCurrentBand().getName());
+                    }
+                    default -> {}
                 }
+
+                display.displayLineOfText(line1.toString(), 1);
+                display.displayLineOfText(line2.toString(), 2);
             }
             default -> {}
         }
