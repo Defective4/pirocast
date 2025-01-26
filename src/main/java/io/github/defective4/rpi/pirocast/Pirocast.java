@@ -84,10 +84,11 @@ public class Pirocast {
 
             @Override
             public void ffmpegTerminated(int code) {
-                if (getCurrentSource().getMode() == SignalMode.FILE) {
+                if (getCurrentSource().getMode() == SignalMode.FILE
+                        || getCurrentSource().getMode() == SignalMode.NETWORK) {
                     mediaError = true;
-                    updateDisplay();
                 }
+                updateDisplay();
             }
 
             @Override
@@ -338,9 +339,18 @@ public class Pirocast {
             Source band = getCurrentSource();
             display.setDisplayBacklight(true);
             state = MAIN;
+            mediaError = false;
             switch (band.getMode()) {
                 case FILE -> fileManager.listAudioFiles(new File(band.getExtra()));
-                case NETWORK -> ffmpeg.start(new URI(band.getExtra()).toURL());
+                case NETWORK -> {
+                    try {
+                        ffmpeg.start(new URI(band.getExtra()).toURL());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        mediaError = true;
+                        updateDisplay();
+                    }
+                }
                 case AUX -> auxLoopback.start();
                 default -> {
                     receiver.start();
@@ -516,7 +526,7 @@ public class Pirocast {
                     }
                     case NETWORK -> {
                         line1 = display.generateCenteredText("Internet Radio");
-                        line2 = display.generateCenteredText(getCurrentSource().getName());
+                        line2 = display.generateCenteredText(mediaError ? "Media Error" : getCurrentSource().getName());
                     }
                     default -> {}
                 }
@@ -531,6 +541,7 @@ public class Pirocast {
     private void updateSettingValue(int direction) {
         Setting set = getCurrentSetting();
         if (set == Setting.SOURCE) {
+            mediaError = false;
             getCurrentSource().setLastFrequency(getCurrentFrequency());
             bandIndex += direction;
             if (bandIndex < 0) bandIndex = bands.size() - 1;
@@ -543,7 +554,14 @@ public class Pirocast {
                 try {
                     switch (band.getMode()) {
                         case FILE -> fileManager.listAudioFiles(new File(band.getExtra()));
-                        case NETWORK -> ffmpeg.start(new URI(band.getExtra()).toURL());
+                        case NETWORK -> {
+                            try {
+                                ffmpeg.start(new URI(band.getExtra()).toURL());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                mediaError = true;
+                            }
+                        }
                         case AUX -> auxLoopback.start();
                         default -> {}
                     }
