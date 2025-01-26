@@ -1,5 +1,6 @@
 package io.github.defective4.rpi.pirocast;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Timer;
@@ -70,7 +71,8 @@ public class SoundEffectsPlayer {
     }
 
     private static byte[] loadData(String resource) {
-        try (InputStream in = AudioSystem.getAudioInputStream(SoundEffectsPlayer.class.getResourceAsStream(resource));
+        try (InputStream in = AudioSystem
+                .getAudioInputStream(new BufferedInputStream(SoundEffectsPlayer.class.getResourceAsStream(resource)));
                 ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
             byte[] tmp = new byte[1024];
             while (true) {

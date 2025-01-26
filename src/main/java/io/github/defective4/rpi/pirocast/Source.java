@@ -8,10 +8,10 @@ import java.util.Objects;
 import io.github.defective4.rpi.pirocast.settings.Setting;
 
 public class Source {
-    private final SignalMode demodulator;
     private final String extra;
     private float lastFrequency;
     private final float minFreq, maxFreq, defaultFreq;
+    private final SignalMode mode;
     private final String name;
     private final Map<Setting, Object> settings = new LinkedHashMap<>();
 
@@ -19,10 +19,10 @@ public class Source {
         this(name, demodulator, minFreq, maxFreq, defaultFreq, null);
     }
 
-    public Source(String name, SignalMode demodulator, float minFreq, float maxFreq, float defaultFreq, String extra) {
+    public Source(String name, SignalMode mode, float minFreq, float maxFreq, float defaultFreq, String extra) {
         this.defaultFreq = defaultFreq;
         this.name = name;
-        this.demodulator = demodulator;
+        this.mode = mode;
         this.minFreq = minFreq;
         this.maxFreq = maxFreq;
         this.extra = extra;
@@ -51,7 +51,7 @@ public class Source {
     }
 
     public SignalMode getMode() {
-        return demodulator;
+        return mode;
     }
 
     public String getName() {
@@ -78,7 +78,7 @@ public class Source {
     }
 
     private void initDefaults() {
-        for (Setting set : Setting.values()) if (set.isApplicable(demodulator)) setSetting(set, set.getDefaultValue());
+        for (Setting set : Setting.values()) if (set.isApplicable(mode)) setSetting(set, set.getDefaultValue());
     }
 
 }
