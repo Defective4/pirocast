@@ -1,5 +1,6 @@
 package io.github.defective4.rpi.pirocast.ext;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
@@ -13,6 +14,10 @@ public class FFMpegPlayer {
     private Process process;
     private Thread readerThread;
     private SourceDataLine sdl;
+
+    public void start(File file) throws IOException, UnsupportedAudioFileException, LineUnavailableException {
+        start(file.toString());
+    }
 
     public void start(URL url) throws IOException, UnsupportedAudioFileException, LineUnavailableException {
         start(url.toString());

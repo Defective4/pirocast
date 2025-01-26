@@ -33,7 +33,7 @@ public class RadioReceiver {
     }
 
     public void initDefaultSettings(Source band) {
-        setDemodulator(band.getDemodulator());
+        setDemodulator(band.getMode());
         setGain((int) band.getSetting(E_GAIN));
         setRDS((boolean) band.getSetting(D_RDS));
         setDeemphasis((int) band.getSetting(F_DEEMP));

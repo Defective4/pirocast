@@ -6,6 +6,7 @@ import static io.github.defective4.rpi.pirocast.SoundEffectsPlayer.*;
 import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +18,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioFormat.Encoding;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 
 import io.github.defective4.rpi.pirocast.display.SwingLcdDisplayEmulator;
 import io.github.defective4.rpi.pirocast.display.TextDisplay;
@@ -50,15 +53,16 @@ public class Pirocast {
     private float centerFrequency = 0;
     private final TextDisplay display;
     private final FFMpegPlayer ffmpeg = new FFMpegPlayer();
-    private final FileManager fileManager = new FileManager();
+    private final FileManager fileManager;
     private final InputManager inputManager;
+    private boolean mediaError;
     private float offsetFrequency = 0;
     private final AppProperties properties;
     private String rdsRadiotext, rdsStation;
     private int rdsRadiotextScrollIndex = 0;
     private boolean rdsSignal, ta, tp, rdsStereo;
-    private final RadioReceiver receiver;
 
+    private final RadioReceiver receiver;
     private int settingIndex = 0;
     private ApplicationState state = OFF;
     private final Timer uiTimer = new Timer(true);
@@ -68,6 +72,21 @@ public class Pirocast {
         Objects.requireNonNull(properties);
         this.bands = bands;
         this.properties = properties;
+        fileManager = new FileManager((index, file) -> {
+            if (getCurrentSource().getMode() == SignalMode.FILE) {
+                ffmpeg.stop();
+                mediaError = false;
+                if (file != null) {
+                    try {
+                        ffmpeg.start(file);
+                    } catch (IOException | UnsupportedAudioFileException | LineUnavailableException e) {
+                        e.printStackTrace();
+                        mediaError = true;
+                        updateDisplay();
+                    }
+                }
+            }
+        });
         aprsDecoder = new Direwolf(line -> aprsQueue.add(line));
         aprsResampler = new WaveResamplerServer(properties.getAprsResamplerPort(), FLOAT_AUDIO_FORMAT,
                 SIGNED_AUDIO_FORMAT);
@@ -85,7 +104,7 @@ public class Pirocast {
                         tp = flags.hasTP();
                         if (flags.isStereo() != rdsStereo) {
                             rdsStereo = flags.isStereo();
-                            if ((boolean) getCurrentBand().getSetting(Setting.B_STEREO)) {
+                            if ((boolean) getCurrentSource().getSetting(Setting.B_STEREO)) {
                                 receiver.setStereo(rdsStereo);
                             }
                         }
@@ -207,6 +226,11 @@ public class Pirocast {
 
             @Override
             public void run() {
+                Source src = getCurrentSource();
+                if (src.getMode() == SignalMode.FILE) {
+                    File srcDir = new File(src.getExtra());
+                    if (!srcDir.isDirectory() || fileManager.isMissingDirectory()) fileManager.listAudioFiles(srcDir);
+                }
                 updateDisplay();
                 if (rdsRadiotext != null) {
                     rdsRadiotextScrollIndex++;
@@ -225,10 +249,6 @@ public class Pirocast {
         }, 1000, 1000);
     }
 
-    public Source getCurrentBand() {
-        return bands.get(bandIndex);
-    }
-
     public float getCurrentFrequency() {
         return centerFrequency + offsetFrequency;
     }
@@ -236,19 +256,22 @@ public class Pirocast {
     public Setting getCurrentSetting() {
         List<Setting> settings = new ArrayList<>();
         settings.add(Setting.SOURCE);
-        settings.addAll(getCurrentBand().getSettings());
+        settings.addAll(getCurrentSource().getSettings());
         return settings.get(settingIndex % settings.size());
     }
 
+    public Source getCurrentSource() {
+        return bands.get(bandIndex);
+    }
+
     public float getTuningStep() {
-        Source band = getCurrentBand();
-        return Setting.B_TUNING_STEP.isApplicable(band.getDemodulator())
-                ? (int) band.getSetting(Setting.B_TUNING_STEP) * 1e3f
+        Source band = getCurrentSource();
+        return Setting.B_TUNING_STEP.isApplicable(band.getMode()) ? (int) band.getSetting(Setting.B_TUNING_STEP) * 1e3f
                 : 100e3f;
     }
 
     public void setFrequency(float freq) {
-        Source band = getCurrentBand();
+        Source band = getCurrentSource();
         if (freq < band.getMinFreq()) freq = band.getMaxFreq();
         if (freq > band.getMaxFreq()) freq = band.getMinFreq();
         float diff = Math.abs(freq - centerFrequency);
@@ -266,10 +289,10 @@ public class Pirocast {
 
     public void start() {
         try {
-            Source band = getCurrentBand();
+            Source band = getCurrentSource();
             display.setDisplayBacklight(true);
             state = MAIN;
-            switch (band.getDemodulator()) {
+            switch (band.getMode()) {
                 case FILE -> fileManager.listAudioFiles(new File(band.getExtra()));
                 case NETWORK -> ffmpeg.start(new URI(band.getExtra()).toURL());
                 case AUX -> auxLoopback.start();
@@ -278,7 +301,7 @@ public class Pirocast {
                     receiver.initDefaultSettings(band);
                 }
             }
-            if (band.getDemodulator() == SignalMode.NFM && (boolean) band.getSetting(Setting.C_APRS)) startAPRS();
+            if (band.getMode() == SignalMode.NFM && (boolean) band.getSetting(Setting.C_APRS)) startAPRS();
             aprsResampler.start();
             resetTransientData();
 
@@ -291,7 +314,7 @@ public class Pirocast {
     }
 
     public void stop() {
-        getCurrentBand().setLastFrequency(getCurrentFrequency());
+        getCurrentSource().setLastFrequency(getCurrentFrequency());
         state = OFF;
         receiver.stop();
         auxLoopback.close();
@@ -303,7 +326,7 @@ public class Pirocast {
 
     private void nextSetting() {
         settingIndex++;
-        if (settingIndex > getCurrentBand().getSettings().size()) settingIndex = 0;
+        if (settingIndex > getCurrentSource().getSettings().size()) settingIndex = 0;
     }
 
     private void raiseError() {
@@ -323,7 +346,7 @@ public class Pirocast {
         rdsStereo = false;
         aprsQueue.clear();
         aprsScrollIndex = 0;
-        if ((boolean) getCurrentBand().getSetting(Setting.B_STEREO)) receiver.setStereo(false);
+        if ((boolean) getCurrentSource().getSetting(Setting.B_STEREO)) receiver.setStereo(false);
     }
 
     private void startAPRS() {
@@ -342,7 +365,7 @@ public class Pirocast {
 
     private void tune(int direction) {
         if (state == MAIN) {
-            SignalMode mode = getCurrentBand().getDemodulator();
+            SignalMode mode = getCurrentSource().getMode();
             if (mode.getId() != SignalMode.UNDEFINED_ID)
                 setFrequency(getCurrentFrequency() + getTuningStep() * direction);
             else if (mode == SignalMode.FILE) {
@@ -366,9 +389,9 @@ public class Pirocast {
                 display.centerTextInLine(setting.getName(), 1);
                 String value;
                 if (setting == Setting.SOURCE) {
-                    value = getCurrentBand().getName();
+                    value = getCurrentSource().getName();
                 } else {
-                    value = setting.getFormatter().format(getCurrentBand().getSetting(setting));
+                    value = setting.getFormatter().format(getCurrentSource().getSetting(setting));
                 }
                 StringBuilder builder = display.generateCenteredText(value);
                 builder.setCharAt(0, '<');
@@ -383,7 +406,7 @@ public class Pirocast {
             }
             case MAIN -> {
                 display.clearDisplay();
-                SignalMode mode = getCurrentBand().getDemodulator();
+                SignalMode mode = getCurrentSource().getMode();
                 float freq = getCurrentFrequency();
                 String freqS = freq <= 1e6 ? Double.toString(getCurrentFrequency() / 1e3) + " KHz"
                         : Double.toString(getCurrentFrequency() / 1e6) + " MHz";
@@ -419,7 +442,9 @@ public class Pirocast {
                         }
                     }
                     case FILE -> {
-                        if (fileManager.hasFiles()) {
+                        if (mediaError) {
+                            line2 = display.generateCenteredText("Media Error");
+                        } else if (fileManager.hasFiles()) {
                             String fileName = fileManager.getSelectedFile().getName();
                             int dotIndex = fileName.lastIndexOf('.');
                             if (dotIndex >= 0) fileName = fileName.substring(0, dotIndex);
@@ -437,7 +462,7 @@ public class Pirocast {
                     }
                     case NETWORK -> {
                         line1 = display.generateCenteredText("Internet Radio");
-                        line2 = display.generateCenteredText(getCurrentBand().getName());
+                        line2 = display.generateCenteredText(getCurrentSource().getName());
                     }
                     default -> {}
                 }
@@ -452,17 +477,17 @@ public class Pirocast {
     private void updateSettingValue(int direction) {
         Setting set = getCurrentSetting();
         if (set == Setting.SOURCE) {
-            getCurrentBand().setLastFrequency(getCurrentFrequency());
+            getCurrentSource().setLastFrequency(getCurrentFrequency());
             bandIndex += direction;
             if (bandIndex < 0) bandIndex = bands.size() - 1;
             if (bandIndex >= bands.size()) bandIndex = 0;
-            Source band = getCurrentBand();
-            if (band.getDemodulator().getId() == SignalMode.UNDEFINED_ID) {
+            Source band = getCurrentSource();
+            if (band.getMode().getId() == SignalMode.UNDEFINED_ID) {
                 receiver.stop();
                 ffmpeg.stop();
                 auxLoopback.close();
                 try {
-                    switch (band.getDemodulator()) {
+                    switch (band.getMode()) {
                         case FILE -> fileManager.listAudioFiles(new File(band.getExtra()));
                         case NETWORK -> ffmpeg.start(new URI(band.getExtra()).toURL());
                         case AUX -> auxLoopback.start();
@@ -484,13 +509,13 @@ public class Pirocast {
                 }
                 receiver.initDefaultSettings(band);
                 setFrequency(band.getLastFrequency());
-                receiver.setRDS(band.getDemodulator() == SignalMode.FM && (boolean) band.getSetting(Setting.D_RDS));
+                receiver.setRDS(band.getMode() == SignalMode.FM && (boolean) band.getSetting(Setting.D_RDS));
             }
-            if (band.getDemodulator() == SignalMode.NFM && (boolean) band.getSetting(Setting.C_APRS)) startAPRS();
+            if (band.getMode() == SignalMode.NFM && (boolean) band.getSetting(Setting.C_APRS)) startAPRS();
             else stopAPRS();
             SoundEffectsPlayer.setEnabled((boolean) band.getSetting(Setting.A_BEEP));
         } else {
-            Source band = getCurrentBand();
+            Source band = getCurrentSource();
             Object currentVal = band.getSetting(set);
             if (currentVal instanceof Integer i) {
                 int newVal = i + direction;

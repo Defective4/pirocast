@@ -34,10 +34,6 @@ public class Source {
         return defaultFreq;
     }
 
-    public SignalMode getDemodulator() {
-        return demodulator;
-    }
-
     public String getExtra() {
         return extra;
     }
@@ -52,6 +48,10 @@ public class Source {
 
     public float getMinFreq() {
         return minFreq;
+    }
+
+    public SignalMode getMode() {
+        return demodulator;
     }
 
     public String getName() {
