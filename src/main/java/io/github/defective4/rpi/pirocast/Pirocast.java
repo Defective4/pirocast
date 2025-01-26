@@ -146,10 +146,7 @@ public class Pirocast {
 
             @Override
             public void buttonPressed() {
-                if (state == MAIN) {
-                    setFrequency(getCurrentFrequency() + getTuningStep());
-                    playClick();
-                }
+                tune(1);
             }
         });
         inputManager.putInputListener(Button.PREV, new InputAdapter() {
@@ -164,10 +161,7 @@ public class Pirocast {
 
             @Override
             public void buttonPressed() {
-                if (state == MAIN) {
-                    setFrequency(getCurrentFrequency() - getTuningStep());
-                    playClick();
-                }
+                tune(-1);
             }
         });
         inputManager.putInputListener(Button.OK, new InputAdapter() {
@@ -344,6 +338,19 @@ public class Pirocast {
         } catch (Exception e) {}
         aprsDecoder.stop();
         aprsResampler.setTarget(null);
+    }
+
+    private void tune(int direction) {
+        if (state == MAIN) {
+            SignalMode mode = getCurrentBand().getDemodulator();
+            if (mode.getId() != SignalMode.UNDEFINED_ID)
+                setFrequency(getCurrentFrequency() + getTuningStep() * direction);
+            else if (mode == SignalMode.FILE) {
+                fileManager.nextFile(direction);
+                updateDisplay();
+            }
+            playClick();
+        }
     }
 
     private void updateDisplay() {
