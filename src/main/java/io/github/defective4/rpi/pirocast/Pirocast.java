@@ -24,6 +24,7 @@ import javax.sound.sampled.AudioFormat.Encoding;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
+import io.github.defective4.rpi.pirocast.FileManager.Mode;
 import io.github.defective4.rpi.pirocast.display.SwingLcdDisplayEmulator;
 import io.github.defective4.rpi.pirocast.display.TextDisplay;
 import io.github.defective4.rpi.pirocast.ext.AUXLoopback;
@@ -93,8 +94,14 @@ public class Pirocast {
 
             @Override
             public void trackEnded() {
-                if (getCurrentSource().getMode() == SignalMode.FILE) {
-                    fileManager.nextFile(1);
+                Source src = getCurrentSource();
+                if (src.getMode() == SignalMode.FILE) {
+                    FileManager.Mode mode = (FileManager.Mode) src.getSetting(Setting.G_PLAYER_MODE);
+                    if (mode == Mode.SHUFFLE) {
+                        fileManager.nextRandomFile();
+                    } else {
+                        fileManager.nextFile(mode == Mode.REPEAT_ONE ? 0 : 1);
+                    }
                     updateDisplay();
                 }
             }
@@ -421,11 +428,14 @@ public class Pirocast {
 
     private void tune(int direction) {
         if (state == MAIN) {
-            SignalMode mode = getCurrentSource().getMode();
+            Source src = getCurrentSource();
+            SignalMode mode = src.getMode();
             if (mode.getId() != SignalMode.UNDEFINED_ID)
                 setFrequency(getCurrentFrequency() + getTuningStep() * direction);
             else if (mode == SignalMode.FILE) {
-                fileManager.nextFile(direction);
+                if ((FileManager.Mode) src.getSetting(Setting.G_PLAYER_MODE) == Mode.SHUFFLE)
+                    fileManager.nextRandomFile();
+                else fileManager.nextFile(direction);
                 updateDisplay();
             }
             playClick();
@@ -598,6 +608,21 @@ public class Pirocast {
                 band.setSetting(set, newVal);
             } else if (currentVal instanceof Boolean bool) {
                 band.setSetting(set, !bool);
+            } else if (currentVal instanceof Enum<?> en) {
+                Enum<?>[] consts = en.getDeclaringClass().getEnumConstants();
+                int index = -1;
+                for (int i = 0; i < consts.length; i++) {
+                    if (consts[i] == en) {
+                        index = i;
+                        break;
+                    }
+                }
+                if (index != -1) {
+                    index += direction;
+                    if (index >= consts.length) index = 0;
+                    if (index < 0) index = consts.length - 1;
+                    band.setSetting(set, consts[index]);
+                }
             }
 
             switch (set) {

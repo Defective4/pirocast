@@ -5,8 +5,24 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 
 public class FileManager {
+
+    public static enum Mode {
+        NONE("None"), REPEAT_ONE("Repeat one"), SHUFFLE("Shuffle");
+
+        private final String name;
+
+        private Mode(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+    }
 
     public static interface UpdateListener {
         void indexUpdated(int newIndex, File file);
@@ -15,6 +31,7 @@ public class FileManager {
     private boolean error;
     private final List<File> library = new ArrayList<>();
     private final UpdateListener ls;
+    private final Random rand = new Random();
     private int selectedFile = 0;
 
     public FileManager(UpdateListener ls) {
@@ -50,6 +67,14 @@ public class FileManager {
         selectedFile += direction;
         if (selectedFile < 0) selectedFile = library.size() - 1;
         if (selectedFile >= library.size()) selectedFile = 0;
+        ls.indexUpdated(selectedFile, getSelectedFile());
+    }
+
+    public void nextRandomFile() {
+        int current = selectedFile;
+        do {
+            selectedFile = rand.nextInt(library.size());
+        } while (library.size() > 1 && selectedFile == current);
         ls.indexUpdated(selectedFile, getSelectedFile());
     }
 

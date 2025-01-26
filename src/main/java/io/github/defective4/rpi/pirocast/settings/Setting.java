@@ -1,5 +1,6 @@
 package io.github.defective4.rpi.pirocast.settings;
 
+import io.github.defective4.rpi.pirocast.FileManager;
 import io.github.defective4.rpi.pirocast.SignalMode;
 
 public enum Setting {
@@ -20,6 +21,13 @@ public enum Setting {
         if (v == 0) return "Off";
         return v * 25 + "u";
     }),
+    G_PLAYER_MODE(
+            "Player mode",
+            SignalMode.FILE,
+            FileManager.Mode.NONE,
+            null,
+            null,
+            mode -> ((FileManager.Mode) mode).getName()),
     SOURCE("Source", new SignalMode[0], null, null, null, null);
 
     private final SignalMode[] applicableModes;
