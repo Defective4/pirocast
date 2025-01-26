@@ -55,7 +55,7 @@ public class Pirocast {
     private final List<Source> bands;
     private float centerFrequency = 0;
     private final TextDisplay display;
-    private final FFMpegPlayer ffmpeg = new FFMpegPlayer();
+    private final FFMpegPlayer ffmpeg;
     private final FileManager fileManager;
     private int fileScrollIndex = 0;
     private final InputManager inputManager;
@@ -80,6 +80,24 @@ public class Pirocast {
         dateFormat = new SimpleDateFormat(properties.getDateFormat());
         this.bands = bands;
         this.properties = properties;
+        ffmpeg = new FFMpegPlayer(new FFMpegPlayer.TrackListener() {
+
+            @Override
+            public void ffmpegTerminated(int code) {
+                if (getCurrentSource().getMode() == SignalMode.FILE) {
+                    mediaError = true;
+                    updateDisplay();
+                }
+            }
+
+            @Override
+            public void trackEnded() {
+                if (getCurrentSource().getMode() == SignalMode.FILE) {
+                    fileManager.nextFile(1);
+                    updateDisplay();
+                }
+            }
+        });
         fileManager = new FileManager((index, file) -> {
             fileScrollIndex = 0;
             if (getCurrentSource().getMode() == SignalMode.FILE) {

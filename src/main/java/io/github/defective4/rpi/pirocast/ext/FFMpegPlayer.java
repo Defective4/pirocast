@@ -11,9 +11,21 @@ import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
 public class FFMpegPlayer {
+
+    public static interface TrackListener {
+        void ffmpegTerminated(int code);
+
+        void trackEnded();
+    }
+
+    private final TrackListener ls;
     private Process process;
     private Thread readerThread;
     private SourceDataLine sdl;
+
+    public FFMpegPlayer(TrackListener ls) {
+        this.ls = ls;
+    }
 
     public void start(File file) throws IOException, UnsupportedAudioFileException, LineUnavailableException {
         start(file.toString());
@@ -55,6 +67,11 @@ public class FFMpegPlayer {
                     sdl.write(buffer, 0, read);
                 }
             } catch (IOException e) {}
+            if (process != null) try {
+                int code = process.waitFor();
+                if (code == 0) ls.trackEnded();
+                else ls.ffmpegTerminated(code);
+            } catch (Exception e) {}
         });
         readerThread.start();
     }
