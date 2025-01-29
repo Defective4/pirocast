@@ -2,6 +2,7 @@ package io.github.defective4.rpi.pirocast;
 
 import static io.github.defective4.rpi.pirocast.ApplicationState.*;
 import static io.github.defective4.rpi.pirocast.SoundEffectsPlayer.*;
+import static io.github.defective4.rpi.pirocast.settings.Setting.A_BEEP;
 
 import java.awt.Window;
 import java.awt.event.KeyEvent;
@@ -368,6 +369,8 @@ public class Pirocast {
                     receiver.initDefaultSettings(band);
                 }
             }
+
+            SoundEffectsPlayer.setEnabled((boolean) band.getSetting(A_BEEP));
             if (band.getMode() == SignalMode.NFM && (boolean) band.getSetting(Setting.C_APRS)) startAPRS();
             aprsResampler.start();
             resetTransientData();
@@ -602,6 +605,7 @@ public class Pirocast {
                 setFrequency(band.getLastFrequency());
                 receiver.setRDS(band.getMode() == SignalMode.FM && (boolean) band.getSetting(Setting.D_RDS));
             }
+            SoundEffectsPlayer.setEnabled((boolean) band.getSetting(A_BEEP));
             if (band.getMode() == SignalMode.NFM && (boolean) band.getSetting(Setting.C_APRS)) startAPRS();
             else stopAPRS();
             SoundEffectsPlayer.setEnabled((boolean) band.getSetting(Setting.A_BEEP));

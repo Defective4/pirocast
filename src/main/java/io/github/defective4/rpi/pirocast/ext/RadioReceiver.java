@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.Objects;
 
 import io.github.defective4.rpi.pirocast.SignalMode;
-import io.github.defective4.rpi.pirocast.SoundEffectsPlayer;
 import io.github.defective4.rpi.pirocast.Source;
 import io.github.defective4.sdr.msg.MessagePair;
 import io.github.defective4.sdr.msg.RawMessageSender;
@@ -38,7 +37,6 @@ public class RadioReceiver {
         setRDS((boolean) band.getSetting(D_RDS));
         setDeemphasis((int) band.getSetting(F_DEEMP));
         setStereo((boolean) band.getSetting(B_STEREO));
-        SoundEffectsPlayer.setEnabled((boolean) band.getSetting(A_BEEP));
     }
 
     public boolean isAlive() {
