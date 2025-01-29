@@ -7,7 +7,27 @@ import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.TargetDataLine;
 
 public class AUXLoopback {
-    private static final AudioFormat AUX_FORMAT = new AudioFormat(44100, 16, 2, true, false);
+    public enum SampleRate {
+        F44(44100, "44.1"), F48(48000, "48");
+
+        private final float freq;
+        private final String name;
+
+        private SampleRate(float freq, String name) {
+            this.name = name;
+            this.freq = freq;
+        }
+
+        public float getFreq() {
+            return freq;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
+
+    private AudioFormat audioFormat;
     private Thread bridgeThread;
     private SourceDataLine sdl;
     private TargetDataLine tdl;
@@ -31,10 +51,18 @@ public class AUXLoopback {
         }
     }
 
+    public void setSampleRate(float rate, boolean restart) throws LineUnavailableException {
+        audioFormat = new AudioFormat(rate, 16, 2, true, false);
+        if (!restart) return;
+        close();
+        start();
+    }
+
     public void start() throws LineUnavailableException {
         if (bridgeThread != null) return;
-        sdl = AudioSystem.getSourceDataLine(AUX_FORMAT);
-        tdl = AudioSystem.getTargetDataLine(AUX_FORMAT);
+        if (audioFormat == null) setSampleRate(44100, false);
+        sdl = AudioSystem.getSourceDataLine(audioFormat);
+        tdl = AudioSystem.getTargetDataLine(audioFormat);
         sdl.open();
         sdl.start();
         tdl.open();

@@ -28,6 +28,7 @@ import io.github.defective4.rpi.pirocast.FileManager.Mode;
 import io.github.defective4.rpi.pirocast.display.SwingLcdDisplayEmulator;
 import io.github.defective4.rpi.pirocast.display.TextDisplay;
 import io.github.defective4.rpi.pirocast.ext.AUXLoopback;
+import io.github.defective4.rpi.pirocast.ext.AUXLoopback.SampleRate;
 import io.github.defective4.rpi.pirocast.ext.Direwolf;
 import io.github.defective4.rpi.pirocast.ext.FFMpegPlayer;
 import io.github.defective4.rpi.pirocast.ext.RadioReceiver;
@@ -358,7 +359,10 @@ public class Pirocast {
                         updateDisplay();
                     }
                 }
-                case AUX -> auxLoopback.start();
+                case AUX -> {
+                    auxLoopback.setSampleRate(((SampleRate) band.getSetting(Setting.B_SAMPLERATE)).getFreq(), false);
+                    auxLoopback.start();
+                }
                 default -> {
                     receiver.start();
                     receiver.initDefaultSettings(band);
@@ -572,7 +576,12 @@ public class Pirocast {
                                 mediaError = true;
                             }
                         }
-                        case AUX -> auxLoopback.start();
+                        case AUX -> {
+                            auxLoopback
+                                    .setSampleRate(((SampleRate) band.getSetting(Setting.B_SAMPLERATE)).getFreq(),
+                                            false);
+                            auxLoopback.start();
+                        }
                         default -> {}
                     }
                 } catch (Exception e) {
@@ -626,6 +635,14 @@ public class Pirocast {
             }
 
             switch (set) {
+                case B_SAMPLERATE -> {
+                    try {
+                        auxLoopback.setSampleRate(((SampleRate) band.getSetting(set)).getFreq(), true);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        raiseError();
+                    }
+                }
                 case A_BEEP -> SoundEffectsPlayer.setEnabled((boolean) band.getSetting(set));
                 case E_GAIN -> receiver.setGain((int) band.getSetting(set));
                 case D_RDS -> {

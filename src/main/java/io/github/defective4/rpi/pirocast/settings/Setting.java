@@ -2,9 +2,17 @@ package io.github.defective4.rpi.pirocast.settings;
 
 import io.github.defective4.rpi.pirocast.FileManager;
 import io.github.defective4.rpi.pirocast.SignalMode;
+import io.github.defective4.rpi.pirocast.ext.AUXLoopback.SampleRate;
 
 public enum Setting {
     A_BEEP("Beep", SignalMode.values(), true, null, null, new OnOffSettingFormatter()),
+    B_SAMPLERATE(
+            "Sample Rate",
+            SignalMode.AUX,
+            SampleRate.F44,
+            null,
+            null,
+            val -> ((SampleRate) val).getName() + " KHz"),
     B_STEREO("Stereo", SignalMode.FM, true, null, null, new OnOffSettingFormatter()),
     B_TUNING_STEP("Tuning Step", new SignalMode[] {
             SignalMode.AM, SignalMode.NFM
@@ -16,11 +24,14 @@ public enum Setting {
     }, 10, 0, 49, null),
     F_DEEMP("Deemphasis", new SignalMode[] {
             SignalMode.FM, SignalMode.NFM
-    }, 2, 0, 3, val -> {
+    }, 2, 0, 3, val ->
+
+    {
         int v = (int) val;
         if (v == 0) return "Off";
         return v * 25 + "u";
     }),
+
     G_PLAYER_MODE(
             "Player mode",
             SignalMode.FILE,
