@@ -366,8 +366,12 @@ public class Pirocast {
                     }
                 }
                 default -> {
-                    receiver.start();
-                    receiver.initDefaultSettings(band);
+                    try {
+                        receiver.start();
+                        receiver.initDefaultSettings(band);
+                    } catch (Exception e) {
+                        raiseMediaError(e);
+                    }
                 }
             }
 
@@ -378,8 +382,7 @@ public class Pirocast {
 
             setFrequency(band.getLastFrequency());
         } catch (Exception e) {
-            e.printStackTrace();
-            raiseError();
+            raiseError(e);
         }
         updateDisplay();
     }
@@ -412,7 +415,8 @@ public class Pirocast {
         if (settingIndex > src.getSettings().size()) settingIndex = 0;
     }
 
-    private void raiseError() {
+    private void raiseError(Exception e) {
+        e.printStackTrace();
         stop();
         state = ERROR;
         display.setDisplayBacklight(true);
@@ -509,6 +513,7 @@ public class Pirocast {
                 StringBuilder line2 = display.generateCenteredText(freqS);
                 line2.setCharAt(0, '<');
                 line2.setCharAt(line2.length() - 1, '>');
+                if (mediaError) line2 = display.generateCenteredText("ERROR");
                 StringBuilder line1 = display.generateCenteredText(mode.name());
 
                 switch (mode) {
@@ -587,31 +592,32 @@ public class Pirocast {
                 receiver.stop();
                 ffmpeg.stop();
                 auxLoopback.close();
-                try {
-                    switch (band.getMode()) {
-                        case FILE -> fileManager.listAudioFiles(new File(band.getExtra()));
-                        case NETWORK -> {
-                            try {
-                                ffmpeg.start(new URI(band.getExtra()).toURL());
-                            } catch (Exception e) {
-                                raiseMediaError(e);
-                            }
+                switch (band.getMode()) {
+                    case FILE -> {
+                        try {
+                            fileManager.listAudioFiles(new File(band.getExtra()));
+                        } catch (Exception e) {
+                            raiseMediaError(e);
                         }
-                        case AUX -> {
-                            try {
-                                auxLoopback
-                                        .setSampleRate(((SampleRate) band.getSetting(Setting.B_SAMPLERATE)).getFreq(),
-                                                false);
-                                auxLoopback.start();
-                            } catch (Exception e) {
-                                raiseMediaError(e);
-                            }
-                        }
-                        default -> {}
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    raiseError();
+                    case NETWORK -> {
+                        try {
+                            ffmpeg.start(new URI(band.getExtra()).toURL());
+                        } catch (Exception e) {
+                            raiseMediaError(e);
+                        }
+                    }
+                    case AUX -> {
+                        try {
+                            auxLoopback
+                                    .setSampleRate(((SampleRate) band.getSetting(Setting.B_SAMPLERATE)).getFreq(),
+                                            false);
+                            auxLoopback.start();
+                        } catch (Exception e) {
+                            raiseMediaError(e);
+                        }
+                    }
+                    default -> {}
                 }
 
             } else {
@@ -620,8 +626,8 @@ public class Pirocast {
                 try {
                     receiver.start();
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    raiseError();
+                    raiseMediaError(e);
+                    return;
                 }
                 receiver.initDefaultSettings(band);
                 setFrequency(band.getLastFrequency());

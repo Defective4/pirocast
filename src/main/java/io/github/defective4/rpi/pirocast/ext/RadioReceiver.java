@@ -2,6 +2,7 @@ package io.github.defective4.rpi.pirocast.ext;
 
 import static io.github.defective4.rpi.pirocast.settings.Setting.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
 
@@ -83,6 +84,7 @@ public class RadioReceiver {
 
     public void start() throws IOException {
         if (isAlive()) return;
+        if (!new File(receiverPath).isFile()) throw new IOException("Receiver file not found");
         controller = new RawMessageSender("tcp://0.0.0.0:" + controllerPort, true);
         controller.start();
         process = new ProcessBuilder("python3", receiverPath, "-a", "tcp://localhost:" + controllerPort, "-r",
