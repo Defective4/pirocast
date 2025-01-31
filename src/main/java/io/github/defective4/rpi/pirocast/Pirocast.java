@@ -188,8 +188,8 @@ public class Pirocast {
         display.createCharacter(2, new byte[] {
                 0b01110, 0b00100, 0b00100, 0b00000, 0b01100, 0b01010, 0b01100, 0b01000
         });
-        inputManager = new SwingInputManager((Window) display, 500, KeyEvent.VK_LEFT, KeyEvent.VK_ENTER,
-                KeyEvent.VK_RIGHT);
+        inputManager = new SwingInputManager((Window) display, properties.getLongClickLength(), KeyEvent.VK_LEFT,
+                KeyEvent.VK_ENTER, KeyEvent.VK_RIGHT);
         display.showDisplay();
         inputManager.putInputListener(Button.NEXT, new InputAdapter() {
 
@@ -283,19 +283,19 @@ public class Pirocast {
                         String name = current.getName();
                         int dotIndex = name.lastIndexOf('.');
                         if (dotIndex >= 0) name = name.substring(0, dotIndex);
-                        fileScrollIndex++;
+                        fileScrollIndex += properties.getFileNameScrollSpeed();
                         if (name.length() - fileScrollIndex < display.getColumns() - 4) fileScrollIndex = 0;
                     }
                 }
                 updateDisplay();
                 if (rdsRadiotext != null) {
-                    rdsRadiotextScrollIndex++;
+                    rdsRadiotextScrollIndex += properties.getRdsScrollSpeed();
                     if (rdsRadiotext.length() - rdsRadiotextScrollIndex < display.getColumns())
                         rdsRadiotextScrollIndex = 0;
                 }
                 if (!aprsQueue.isEmpty()) {
                     String element = aprsQueue.peek();
-                    aprsScrollIndex += 2;
+                    aprsScrollIndex += properties.getAprsScrollSpeed();
                     if (element.length() - aprsScrollIndex < display.getColumns()) {
                         aprsQueue.poll();
                         aprsScrollIndex = 0;

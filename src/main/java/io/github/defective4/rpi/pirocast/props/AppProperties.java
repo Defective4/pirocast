@@ -10,8 +10,17 @@ public class AppProperties extends Properties {
     protected String receiverExecutablePath = "./src/main/grc/receiver.py";
     protected String timeFormat = "HH:mm:ss";
 
+    protected int ui_aprsScrollSpeed = 1;
+    protected int ui_fileNameScrollSpeed = 1;
+    protected int ui_longClickLength = 500;
+    protected int ui_rdsScrollSpeed = 1;
+
     public int getAprsResamplerPort() {
         return aprsResamplerPort;
+    }
+
+    public int getAprsScrollSpeed() {
+        return ui_aprsScrollSpeed;
     }
 
     public int getControllerPort() {
@@ -22,8 +31,20 @@ public class AppProperties extends Properties {
         return dateFormat;
     }
 
+    public int getFileNameScrollSpeed() {
+        return ui_fileNameScrollSpeed;
+    }
+
+    public int getLongClickLength() {
+        return ui_longClickLength;
+    }
+
     public int getRdsPort() {
         return rdsPort;
+    }
+
+    public int getRdsScrollSpeed() {
+        return ui_rdsScrollSpeed;
     }
 
     public String getReceiverExecutablePath() {
