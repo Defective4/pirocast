@@ -396,7 +396,19 @@ public class Pirocast {
 
     private void nextSetting() {
         settingIndex++;
-        if (settingIndex > getCurrentSource().getSettings().size()) settingIndex = 0;
+        Source src = getCurrentSource();
+        Setting set = getCurrentSetting();
+        switch (set) {
+            case C_APRS:
+                if (!src.isAPRSAllowed()) settingIndex++;
+                break;
+            case D_RDS:
+                if (!src.isRDSAllowed()) settingIndex++;
+                break;
+            default:
+                break;
+        }
+        if (settingIndex > src.getSettings().size()) settingIndex = 0;
     }
 
     private void raiseError() {

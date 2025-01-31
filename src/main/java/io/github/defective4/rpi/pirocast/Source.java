@@ -73,6 +73,14 @@ public class Source {
         return settings.keySet();
     }
 
+    public boolean isAPRSAllowed() {
+        return allowAPRS;
+    }
+
+    public boolean isRDSAllowed() {
+        return allowRDS;
+    }
+
     public void setLastFrequency(float lastFrequency) {
         this.lastFrequency = lastFrequency;
     }
