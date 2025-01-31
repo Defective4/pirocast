@@ -117,9 +117,7 @@ public class Pirocast {
                     try {
                         ffmpeg.start(file);
                     } catch (IOException | UnsupportedAudioFileException | LineUnavailableException e) {
-                        e.printStackTrace();
-                        mediaError = true;
-                        updateDisplay();
+                        raiseMediaError(e);
                     }
                 }
             }
@@ -239,7 +237,7 @@ public class Pirocast {
                         nextSetting();
                         updateDisplay();
                     }
-                    case MAIN, ERROR -> {
+                    case MAIN -> {
                         state = SETTINGS;
                         updateDisplay();
                     }
@@ -355,14 +353,17 @@ public class Pirocast {
                     try {
                         ffmpeg.start(new URI(band.getExtra()).toURL());
                     } catch (Exception e) {
-                        e.printStackTrace();
-                        mediaError = true;
-                        updateDisplay();
+                        raiseMediaError(e);
                     }
                 }
                 case AUX -> {
-                    auxLoopback.setSampleRate(((SampleRate) band.getSetting(Setting.B_SAMPLERATE)).getFreq(), false);
-                    auxLoopback.start();
+                    try {
+                        auxLoopback
+                                .setSampleRate(((SampleRate) band.getSetting(Setting.B_SAMPLERATE)).getFreq(), false);
+                        auxLoopback.start();
+                    } catch (Exception e) {
+                        raiseMediaError(e);
+                    }
                 }
                 default -> {
                     receiver.start();
@@ -415,6 +416,12 @@ public class Pirocast {
         stop();
         state = ERROR;
         display.setDisplayBacklight(true);
+    }
+
+    private void raiseMediaError(Exception e) {
+        e.printStackTrace();
+        mediaError = true;
+        updateDisplay();
     }
 
     private void resetTransientData() {
@@ -550,7 +557,7 @@ public class Pirocast {
                         }
                     }
                     case AUX -> {
-                        line2 = new StringBuilder();
+                        line2 = mediaError ? display.generateCenteredText("ERROR") : new StringBuilder();
                         line1 = display.generateCenteredText("AUX In");
                     }
                     case NETWORK -> {
@@ -587,15 +594,18 @@ public class Pirocast {
                             try {
                                 ffmpeg.start(new URI(band.getExtra()).toURL());
                             } catch (Exception e) {
-                                e.printStackTrace();
-                                mediaError = true;
+                                raiseMediaError(e);
                             }
                         }
                         case AUX -> {
-                            auxLoopback
-                                    .setSampleRate(((SampleRate) band.getSetting(Setting.B_SAMPLERATE)).getFreq(),
-                                            false);
-                            auxLoopback.start();
+                            try {
+                                auxLoopback
+                                        .setSampleRate(((SampleRate) band.getSetting(Setting.B_SAMPLERATE)).getFreq(),
+                                                false);
+                                auxLoopback.start();
+                            } catch (Exception e) {
+                                raiseMediaError(e);
+                            }
                         }
                         default -> {}
                     }
@@ -653,10 +663,10 @@ public class Pirocast {
             switch (set) {
                 case B_SAMPLERATE -> {
                     try {
+                        mediaError = false;
                         auxLoopback.setSampleRate(((SampleRate) band.getSetting(set)).getFreq(), true);
                     } catch (Exception e) {
-                        e.printStackTrace();
-                        raiseError();
+                        raiseMediaError(e);
                     }
                 }
                 case A_BEEP -> SoundEffectsPlayer.setEnabled((boolean) band.getSetting(set));

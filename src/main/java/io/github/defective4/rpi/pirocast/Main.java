@@ -8,8 +8,10 @@ public class Main {
     public static void main(String[] args) {
         try {
             AppProperties props = new AppProperties();
-            Pirocast cast = new Pirocast(
-                    Arrays.asList(new Source("FM", SignalMode.FM, 87e6f, 108e6f, 88e6f, null, false, false)), props);
+            Pirocast cast = new Pirocast(Arrays
+                    .asList(new Source("FM", SignalMode.FM, 87e6f, 108e6f, 88e6f, null, false, false),
+                            new Source("AUX", SignalMode.AUX, 0, 0, 0, null, false, false)),
+                    props);
 //            cast.start();
         } catch (Exception e) {
             e.printStackTrace();
