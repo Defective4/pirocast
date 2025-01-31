@@ -8,6 +8,7 @@ import java.util.Objects;
 import io.github.defective4.rpi.pirocast.settings.Setting;
 
 public class Source {
+    private final boolean allowAPRS, allowRDS;
     private final String extra;
     private float lastFrequency;
     private final float minFreq, maxFreq, defaultFreq;
@@ -15,17 +16,16 @@ public class Source {
     private final String name;
     private final Map<Setting, Object> settings = new LinkedHashMap<>();
 
-    public Source(String name, SignalMode demodulator, float minFreq, float maxFreq, float defaultFreq) {
-        this(name, demodulator, minFreq, maxFreq, defaultFreq, null);
-    }
-
-    public Source(String name, SignalMode mode, float minFreq, float maxFreq, float defaultFreq, String extra) {
+    public Source(String name, SignalMode mode, float minFreq, float maxFreq, float defaultFreq, String extra,
+            boolean allowRDS, boolean allowAPRS) {
         this.defaultFreq = defaultFreq;
         this.name = name;
         this.mode = mode;
         this.minFreq = minFreq;
         this.maxFreq = maxFreq;
         this.extra = extra;
+        this.allowAPRS = allowAPRS;
+        this.allowRDS = allowRDS;
         lastFrequency = defaultFreq;
         initDefaults();
     }
@@ -60,6 +60,11 @@ public class Source {
 
     public Object getSetting(Setting setting) {
         Objects.requireNonNull(setting);
+        switch (setting) {
+            case D_RDS -> { if (!allowRDS) return false; }
+            case C_APRS -> { if (!allowAPRS) return false; }
+            default -> {}
+        }
         Object val = settings.get(setting);
         return val == null ? setting.getDefaultValue() : val;
     }
