@@ -1,0 +1,50 @@
+{
+	"sources": [
+		{
+			"name": "FM",
+			"mode": "FM",
+			"allowRDS": false,
+			"minFreq": 87000000,
+			"maxFreq": 108000000,
+			"defaultFreq": 88000000
+		},
+		{
+			"name": "NFM (2m)",
+			"mode": "NFM",
+			"allowAPRS": true,
+			"minFreq": 144000000,
+			"maxFreq": 146000000,
+			"defaultFreq": 145000000
+		},
+		{
+			"name": "AM",
+			"mode": "AM",
+			"minFreq": 0,
+			"maxFreq": 21000000,
+			"defaultFreq": 9500000
+		},
+		{
+			"name": "AUX",
+			"mode": "AUX",
+			"minFreq": 0,
+			"maxFreq": 0,
+			"defaultFreq": 0
+		},
+		{
+			"name": "File",
+			"mode": "FILE",
+			"extra": "./audio",
+			"minFreq": 0,
+			"maxFreq": 0,
+			"defaultFreq": 0
+		},
+		{
+			"name": "Network",
+			"mode": "NETWORK",
+			"extra": "http://localhost:8080/radio.mp3",
+			"minFreq": 0,
+			"maxFreq": 0,
+			"defaultFreq": 0
+		}
+	]
+}

@@ -5,3 +5,5 @@
 /src/main/grc/*.py
 __pycache__
 /pirocast.properties
+/sources.json
+/audio
