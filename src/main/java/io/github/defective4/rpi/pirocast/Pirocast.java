@@ -546,7 +546,8 @@ public class Pirocast {
                 display.displayLineOfText(builder.toString(), 2);
             }
             case OFF -> {
-                if (display.getDisplayBacklight() && System.currentTimeMillis() - offLightTime > 5000) {
+                if (display.getDisplayBacklight()
+                        && System.currentTimeMillis() - offLightTime > properties.getStandbyDisplayLinger()) {
                     display.clearDisplay();
                     display.setDisplayBacklight(false);
                 }

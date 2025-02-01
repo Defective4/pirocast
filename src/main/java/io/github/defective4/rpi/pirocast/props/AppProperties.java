@@ -16,6 +16,7 @@ public class AppProperties extends Properties {
     protected int ui_fileNameScrollSpeed = 1;
     protected int ui_longClickLength = 500;
     protected int ui_rdsScrollSpeed = 1;
+    protected int ui_standbyDisplayLinger = 5000;
 
     public int getAprsResamplerPort() {
         return aprsResamplerPort;
@@ -56,6 +57,10 @@ public class AppProperties extends Properties {
 
     public String getReceiverExecutablePath() {
         return receiverExecutablePath;
+    }
+
+    public int getStandbyDisplayLinger() {
+        return ui_standbyDisplayLinger == 0 ? Integer.MAX_VALUE : ui_standbyDisplayLinger;
     }
 
     public String getTimeFormat() {
