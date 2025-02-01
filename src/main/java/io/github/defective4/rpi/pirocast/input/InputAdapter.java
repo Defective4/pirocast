@@ -11,4 +11,6 @@ public abstract class InputAdapter implements InputListener {
     @Override
     public void buttonPressed() {}
 
+    @Override
+    public void buttonReleased() {}
 }

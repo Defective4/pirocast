@@ -62,12 +62,14 @@ public class Pirocast {
     private final FileManager fileManager;
     private int fileScrollIndex = 0;
     private final InputManager inputManager;
+    private int lastNavButtonDirection;
+    private long lastNavButtonPress;
     private boolean mediaError;
     private long offLightTime = 0;
     private float offsetFrequency = 0;
+
     private final AppProperties properties;
     private String rdsRadiotext, rdsStation;
-
     private int rdsRadiotextScrollIndex = 0;
     private boolean rdsSignal, ta, tp, rdsStereo;
     private final RadioReceiver receiver;
@@ -200,11 +202,18 @@ public class Pirocast {
                     offLightTime = System.currentTimeMillis();
                     display.setDisplayBacklight(!display.getDisplayBacklight());
                 }
+                tune(1);
             }
 
             @Override
             public void buttonPressed() {
-                tune(1);
+                lastNavButtonDirection = 1;
+                lastNavButtonPress = System.currentTimeMillis();
+            }
+
+            @Override
+            public void buttonReleased() {
+                lastNavButtonDirection = 0;
             }
         });
         inputManager.putInputListener(Button.PREV, new InputAdapter() {
@@ -218,11 +227,18 @@ public class Pirocast {
                     offLightTime = System.currentTimeMillis();
                     display.setDisplayBacklight(!display.getDisplayBacklight());
                 }
+                tune(-1);
             }
 
             @Override
             public void buttonPressed() {
-                tune(-1);
+                lastNavButtonDirection = -1;
+                lastNavButtonPress = System.currentTimeMillis();
+            }
+
+            @Override
+            public void buttonReleased() {
+                lastNavButtonDirection = 0;
             }
         });
         inputManager.putInputListener(Button.OK, new InputAdapter() {
@@ -301,6 +317,27 @@ public class Pirocast {
                 }
             }
         }, 1000, 1000);
+        uiTimer.scheduleAtFixedRate(new TimerTask() {
+
+            private boolean tuning;
+
+            @Override
+            public void run() {
+                if (getCurrentSource().getMode().getId() == SignalMode.UNDEFINED_ID) return;
+                if (state == MAIN && lastNavButtonDirection != 0
+                        && System.currentTimeMillis() - lastNavButtonPress > properties.getLongClickLength()) {
+                    if (!tuning) {
+                        tuning = true;
+                        playLongClick();
+                    }
+                    tune(lastNavButtonDirection, false);
+                } else if (tuning) {
+                    tuning = false;
+                    receiver.setCenterFrequency(centerFrequency);
+                    receiver.setDemodFrequency(offsetFrequency);
+                }
+            }
+        }, 100, 100); // TODO delay
     }
 
     public float getCurrentFrequency() {
@@ -325,6 +362,10 @@ public class Pirocast {
     }
 
     public void setFrequency(float freq) {
+        setFrequency(freq, true);
+    }
+
+    public void setFrequency(float freq, boolean commit) {
         Source band = getCurrentSource();
         if (freq < band.getMinFreq()) freq = band.getMaxFreq();
         if (freq > band.getMaxFreq()) freq = band.getMinFreq();
@@ -335,8 +376,10 @@ public class Pirocast {
         } else {
             offsetFrequency = freq - centerFrequency;
         }
-        receiver.setDemodFrequency(offsetFrequency);
-        receiver.setCenterFrequency(centerFrequency);
+        if (commit) {
+            receiver.setDemodFrequency(offsetFrequency);
+            receiver.setCenterFrequency(centerFrequency);
+        }
         resetTransientData();
         updateDisplay();
     }
@@ -457,18 +500,22 @@ public class Pirocast {
     }
 
     private void tune(int direction) {
+        tune(direction, true);
+    }
+
+    private void tune(int direction, boolean commit) {
         if (state == MAIN) {
             Source src = getCurrentSource();
             SignalMode mode = src.getMode();
             if (mode.getId() != SignalMode.UNDEFINED_ID)
-                setFrequency(getCurrentFrequency() + getTuningStep() * direction);
+                setFrequency(getCurrentFrequency() + getTuningStep() * direction, commit);
             else if (mode == SignalMode.FILE) {
                 if ((FileManager.Mode) src.getSetting(Setting.G_PLAYER_MODE) == Mode.SHUFFLE)
                     fileManager.nextRandomFile();
                 else fileManager.nextFile(direction);
                 updateDisplay();
             }
-            playClick();
+            if (commit) playClick();
         }
     }
 

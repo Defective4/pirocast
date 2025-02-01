@@ -33,6 +33,7 @@ public abstract class InputManager {
             long diff = System.currentTimeMillis() - clickTimes.getOrDefault(button, System.currentTimeMillis());
             if (listeners.containsKey(button)) {
                 InputListener ls = listeners.get(button);
+                ls.buttonReleased();
                 if (diff >= longClickTime) ls.buttonLongClicked();
                 else ls.buttonClicked();
             }

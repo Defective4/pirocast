@@ -6,4 +6,6 @@ public interface InputListener {
     void buttonLongClicked();
 
     void buttonPressed();
+
+    void buttonReleased();
 }
