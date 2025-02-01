@@ -201,7 +201,7 @@ public class Pirocast {
             }
             case I2C: {
                 ctx = createPiContext();
-                display = new I2CLcdDisplay(ctx, properties.getDisplayColumns(), properties.getDisplayRows());
+                display = new I2CLcdDisplay(ctx, properties.getDisplayRows(), properties.getDisplayColumns());
                 break;
             }
         }
@@ -563,13 +563,13 @@ public class Pirocast {
         switch (state) {
             case ERROR -> {
                 display.clearDisplay();
-                display.centerTextInLine("System", 1);
-                display.centerTextInLine("Error", 2);
+                display.centerTextInLine("System", 0);
+                display.centerTextInLine("Error", 1);
             }
             case SETTINGS -> {
                 display.clearDisplay();
                 Setting setting = getCurrentSetting();
-                display.centerTextInLine(setting.getName(), 1);
+                display.centerTextInLine(setting.getName(), 0);
                 String value;
                 if (setting == Setting.SOURCE) {
                     value = getCurrentSource().getName();
@@ -579,7 +579,7 @@ public class Pirocast {
                 StringBuilder builder = display.generateCenteredText(value);
                 builder.setCharAt(0, '<');
                 builder.setCharAt(builder.length() - 1, '>');
-                display.displayLineOfText(builder.toString(), 2);
+                display.displayLineOfText(builder.toString(), 1);
             }
             case OFF -> {
                 if (display.getDisplayBacklight()
@@ -588,8 +588,8 @@ public class Pirocast {
                     display.setDisplayBacklight(false);
                 }
                 Date now = new Date(System.currentTimeMillis());
-                display.centerTextInLine(timeFormat.format(now), 1);
-                display.centerTextInLine(dateFormat.format(now), 2);
+                display.centerTextInLine(timeFormat.format(now), 0);
+                display.centerTextInLine(dateFormat.format(now), 1);
             }
             case MAIN -> {
                 display.clearDisplay();
@@ -660,8 +660,8 @@ public class Pirocast {
                     default -> {}
                 }
 
-                display.displayLineOfText(line1.toString(), 1);
-                display.displayLineOfText(line2.toString(), 2);
+                display.displayLineOfText(line1.toString(), 0);
+                display.displayLineOfText(line2.toString(), 1);
             }
             default -> {}
         }

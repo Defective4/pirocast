@@ -57,12 +57,12 @@ public class SwingLcdDisplayEmulator extends JFrame implements TextDisplay {
 
     @Override
     public void clearDisplay() {
-        for (int i = 0; i < labels.length; i++) clearLine(i + 1);
+        for (int i = 0; i < labels.length; i++) clearLine(i);
     }
 
     @Override
     public void clearLine(int line) {
-        labels[line - 1].setText(" ");
+        labels[line].setText(" ");
     }
 
     @Override
@@ -71,7 +71,7 @@ public class SwingLcdDisplayEmulator extends JFrame implements TextDisplay {
     @Override
     public void displayLineOfText(String text, int line) {
         if (text.length() > getColumns()) text = text.substring(0, getColumns());
-        labels[line - 1].setText(text);
+        labels[line].setText(text);
     }
 
     @Override
