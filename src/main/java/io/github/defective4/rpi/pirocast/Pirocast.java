@@ -329,15 +329,17 @@ public class Pirocast {
                     if (!tuning) {
                         tuning = true;
                         playLongClick();
+                        receiver.setMuted(true);
                     }
                     tune(lastNavButtonDirection, false);
                 } else if (tuning) {
                     tuning = false;
                     receiver.setCenterFrequency(centerFrequency);
                     receiver.setDemodFrequency(offsetFrequency);
+                    receiver.setMuted(false);
                 }
             }
-        }, 100, 100); // TODO delay
+        }, 0, 80);
     }
 
     public float getCurrentFrequency() {

@@ -72,6 +72,10 @@ public class RadioReceiver {
         if (controller != null) controller.sendMessage(new MessagePair("gain", value));
     }
 
+    public void setMuted(boolean muted) {
+        if (controller != null) controller.sendMessage(new MessagePair("muted", muted ? 1 : 0));
+    }
+
     public void setRDS(boolean enableRDS) {
         if (controller != null) controller.sendMessage(new MessagePair("enable_rds", enableRDS ? 1 : 0));
         if (enableRDS) startRDS();

@@ -36,7 +36,7 @@ blocks:
 - name: aprs
   id: variable
   parameters:
-    comment: ''
+    comment: adjustable
     value: '0'
   states:
     bus_sink: false
@@ -157,6 +157,18 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [1000, 8.0]
+    rotation: 0
+    state: true
+- name: muted
+  id: variable
+  parameters:
+    comment: adjustable
+    value: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [256, 80.0]
     rotation: 0
     state: true
 - name: rrc_taps
@@ -451,7 +463,7 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    enabled: enable_rds == 1
+    enabled: enable_rds == 1 and muted == 0
     input_index: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -520,7 +532,7 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    enabled: 'True'
+    enabled: muted == 0
     input_index: 2 if demod == 0 else 3 if demod == 2 else 1 if fm_stereo == 1 else
       0
     maxoutbuf: '0'
@@ -544,7 +556,7 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    enabled: 'True'
+    enabled: muted == 0
     input_index: 2 if demod == 0 else 3 if demod == 2 else 1 if fm_stereo == 1 else
       0
     maxoutbuf: '0'
@@ -717,17 +729,17 @@ blocks:
       \    out_sig=None\n        )\n\n        self.message_port_register_in(pmt.intern(\"\
       inpair\"))\n        self.set_msg_handler(pmt.intern(\"inpair\"), self.msg_handler)\n\
       \n    def init_callbacks(self, demod, demod_freq, enable_rds, fm_stereo, deemp,\
-      \ gain, center_freq, aprs):\n        self.callbacks = {\n            \"demod\"\
-      : demod,\n            \"demod_freq\": demod_freq,\n            \"enable_rds\"\
-      : enable_rds,\n            \"fm_stereo\": fm_stereo,\n            \"deemp\"\
-      : deemp,\n            \"gain\": gain,\n            \"center_freq\": center_freq,\n\
-      \            \"aprs\": aprs\n        }\n\n    def msg_handler(self, msg):\n\
-      \        if not pmt.is_pair(msg) or pmt.is_dict(msg) or pmt.is_pdu(msg):\n \
-      \           gr.log.warn(\n                \"Input message %s is not a simple\
-      \ pair, dropping\" % repr(msg))\n            return\n\n        val = pmt.to_python(pmt.cdr(msg))\n\
-      \        key = pmt.to_python(pmt.car(msg))\n        if key in self.callbacks:\n\
-      \            self.callbacks[key](val)\n\n    def stop(self):\n        return\
-      \ True\n"
+      \ gain, center_freq, aprs, muted):\n        self.callbacks = {\n           \
+      \ \"demod\": demod,\n            \"demod_freq\": demod_freq,\n            \"\
+      enable_rds\": enable_rds,\n            \"fm_stereo\": fm_stereo,\n         \
+      \   \"deemp\": deemp,\n            \"gain\": gain,\n            \"center_freq\"\
+      : center_freq,\n            \"aprs\": aprs,\n            \"muted\": muted\n\
+      \        }\n\n    def msg_handler(self, msg):\n        if not pmt.is_pair(msg)\
+      \ or pmt.is_dict(msg) or pmt.is_pdu(msg):\n            gr.log.warn(\n      \
+      \          \"Input message %s is not a simple pair, dropping\" % repr(msg))\n\
+      \            return\n\n        val = pmt.to_python(pmt.cdr(msg))\n        key\
+      \ = pmt.to_python(pmt.car(msg))\n        if key in self.callbacks:\n       \
+      \     self.callbacks[key](val)\n\n    def stop(self):\n        return True\n"
     affinity: ''
     alias: ''
     comment: 'Handle commands
@@ -941,7 +953,8 @@ blocks:
   parameters:
     alias: ''
     code: self.epy_block_0.init_callbacks(self.set_demod, self.set_demod_freq, self.set_enable_rds,
-      self.set_fm_stereo, self.set_deemp, self.set_gain, self.set_center_freq, self.set_aprs)
+      self.set_fm_stereo, self.set_deemp, self.set_gain, self.set_center_freq, self.set_aprs,
+      self.set_muted)
     comment: Initialize command callbacks
     priority: '0'
     section: main_after_init
