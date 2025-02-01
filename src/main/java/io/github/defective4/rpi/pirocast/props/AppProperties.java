@@ -1,11 +1,13 @@
 package io.github.defective4.rpi.pirocast.props;
 
+import java.util.Locale;
 import java.util.Properties;
 
 public class AppProperties extends Properties {
     protected int aprsResamplerPort = 55557;
     protected int controllerPort = 55555;
-    protected String dateFormat = "dd.MM.yyyy";
+    protected String dateFormat = "d MMM YY";
+    protected String dateTimeLocale = "default";
     protected int rdsPort = 55556;
     protected String receiverExecutablePath = "./src/main/grc/receiver.py";
     protected String timeFormat = "HH:mm:ss";
@@ -29,6 +31,11 @@ public class AppProperties extends Properties {
 
     public String getDateFormat() {
         return dateFormat;
+    }
+
+    public Locale getDateTimeLocale() {
+        return "default".equalsIgnoreCase(dateTimeLocale) ? Locale.getDefault(Locale.Category.FORMAT)
+                : new Locale(dateTimeLocale);
     }
 
     public int getFileNameScrollSpeed() {

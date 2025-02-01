@@ -14,6 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.Timer;
@@ -81,8 +82,9 @@ public class Pirocast {
     public Pirocast(List<Source> bands, AppProperties properties) {
         if (bands.isEmpty()) throw new IllegalArgumentException("Band list cannot be empty");
         Objects.requireNonNull(properties);
-        timeFormat = new SimpleDateFormat(properties.getTimeFormat());
-        dateFormat = new SimpleDateFormat(properties.getDateFormat());
+        Locale loc = properties.getDateTimeLocale();
+        timeFormat = new SimpleDateFormat(properties.getTimeFormat(), loc);
+        dateFormat = new SimpleDateFormat(properties.getDateFormat(), loc);
         this.bands = bands;
         this.properties = properties;
         ffmpeg = new FFMpegPlayer(new FFMpegPlayer.TrackListener() {
