@@ -4,3 +4,4 @@
 /.settings
 /src/main/grc/*.py
 __pycache__
+/pirocast.properties
