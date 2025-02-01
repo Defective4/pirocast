@@ -26,7 +26,15 @@ import javax.sound.sampled.AudioFormat.Encoding;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
+import com.pi4j.Pi4J;
+import com.pi4j.context.Context;
+import com.pi4j.library.pigpio.PiGpio;
+import com.pi4j.plugin.linuxfs.provider.i2c.LinuxFsI2CProvider;
+import com.pi4j.plugin.pigpio.provider.gpio.digital.PiGpioDigitalInputProvider;
+import com.pi4j.plugin.raspberrypi.platform.RaspberryPiPlatform;
+
 import io.github.defective4.rpi.pirocast.FileManager.Mode;
+import io.github.defective4.rpi.pirocast.display.I2CLcdDisplay;
 import io.github.defective4.rpi.pirocast.display.SwingLcdDisplayEmulator;
 import io.github.defective4.rpi.pirocast.display.TextDisplay;
 import io.github.defective4.rpi.pirocast.ext.AUXLoopback;
@@ -36,10 +44,12 @@ import io.github.defective4.rpi.pirocast.ext.FFMpegPlayer;
 import io.github.defective4.rpi.pirocast.ext.RadioReceiver;
 import io.github.defective4.rpi.pirocast.ext.WaveResamplerServer;
 import io.github.defective4.rpi.pirocast.input.Button;
+import io.github.defective4.rpi.pirocast.input.GPIOInputManager;
 import io.github.defective4.rpi.pirocast.input.InputAdapter;
 import io.github.defective4.rpi.pirocast.input.InputManager;
 import io.github.defective4.rpi.pirocast.input.SwingInputManager;
 import io.github.defective4.rpi.pirocast.props.AppProperties;
+import io.github.defective4.rpi.pirocast.props.DisplayAdapter;
 import io.github.defective4.rpi.pirocast.settings.Setting;
 import io.github.defective4.sdr.rds.RDSFlags;
 import io.github.defective4.sdr.rds.RDSListener;
@@ -182,7 +192,35 @@ public class Pirocast {
             ffmpeg.stop();
         }));
         centerFrequency = bands.get(0).getDefaultFreq();
-        display = new SwingLcdDisplayEmulator(16, 2); // TODO configuration
+        Context ctx = null;
+        switch (properties.getDisplayAdapter()) {
+            default:
+            case SWING: {
+                display = new SwingLcdDisplayEmulator(properties.getDisplayColumns(), properties.getDisplayRows());
+                break;
+            }
+            case I2C: {
+                ctx = createPiContext();
+                display = new I2CLcdDisplay(ctx, properties.getDisplayColumns(), properties.getDisplayRows());
+                break;
+            }
+        }
+        switch (properties.getInputAdapter()) {
+            case GPIO: {
+                if (ctx == null) ctx = createPiContext();
+                inputManager = new GPIOInputManager(properties.getGpioInputNext(), properties.getGpioInputPrev(),
+                        properties.getGpioInputOk(), properties.getGpioInputNext(), ctx);
+                break;
+            }
+            default:
+            case SWING: {
+                if (properties.getDisplayAdapter() != DisplayAdapter.SWING)
+                    throw new IllegalStateException("Swing input adapter is only compatible with Swing display");
+                inputManager = new SwingInputManager((Window) display, properties.getLongClickLength(),
+                        KeyEvent.VK_LEFT, KeyEvent.VK_ENTER, KeyEvent.VK_RIGHT);
+                break;
+            }
+        }
         display.setDisplayBacklight(false);
         display.createCharacter(1, new byte[] {
                 0b01110, 0b00100, 0b00100, 0b00000, 0b00100, 0b01010, 0b01110, 0b01010
@@ -190,8 +228,6 @@ public class Pirocast {
         display.createCharacter(2, new byte[] {
                 0b01110, 0b00100, 0b00100, 0b00000, 0b01100, 0b01010, 0b01100, 0b01000
         });
-        inputManager = new SwingInputManager((Window) display, properties.getLongClickLength(), KeyEvent.VK_LEFT,
-                KeyEvent.VK_ENTER, KeyEvent.VK_RIGHT);
         display.showDisplay();
         inputManager.putInputListener(Button.NEXT, new InputAdapter() {
 
@@ -744,5 +780,15 @@ public class Pirocast {
             }
         }
         updateDisplay();
+    }
+
+    private static Context createPiContext() {
+        PiGpio pigpio = PiGpio.newNativeInstance();
+        return Pi4J.newContextBuilder().noAutoDetect().add(new RaspberryPiPlatform() {
+            @Override
+            protected String[] getProviders() {
+                return new String[] {};
+            }
+        }).add(PiGpioDigitalInputProvider.newInstance(pigpio), LinuxFsI2CProvider.newInstance()).build();
     }
 }

@@ -15,12 +15,21 @@ public class AppProperties extends Properties {
     protected int controllerPort = 55555;
     protected String dateFormat = "d MMM YY";
     protected String dateTimeLocale = "default";
+    protected String displayAdapter = "swing";
+    protected int displayColumns = 16;
+    protected int displayRows = 2;
+
+    protected int gpio_input_next = 0;
+    protected int gpio_input_ok = 0;
+    protected int gpio_input_prev = 0;
+    protected String inputAdapter = "swing";
     protected int rdsPort = 55556;
+
     protected String receiverExecutablePath = "./src/main/grc/receiver.py";
     protected String timeFormat = "HH:mm:ss";
-
     protected int ui_aprsScrollSpeed = 1;
     protected int ui_fileNameScrollSpeed = 1;
+
     protected int ui_longClickLength = 500;
     protected int ui_rdsScrollSpeed = 1;
     protected int ui_standbyDisplayLinger = 5000;
@@ -52,8 +61,44 @@ public class AppProperties extends Properties {
                 : new Locale(dateTimeLocale);
     }
 
+    public DisplayAdapter getDisplayAdapter() {
+        try {
+            return DisplayAdapter.valueOf(displayAdapter.toUpperCase());
+        } catch (Exception e) {
+            return DisplayAdapter.SWING;
+        }
+    }
+
+    public int getDisplayColumns() {
+        return displayColumns;
+    }
+
+    public int getDisplayRows() {
+        return displayRows;
+    }
+
     public int getFileNameScrollSpeed() {
         return ui_fileNameScrollSpeed;
+    }
+
+    public int getGpioInputNext() {
+        return gpio_input_next;
+    }
+
+    public int getGpioInputOk() {
+        return gpio_input_ok;
+    }
+
+    public int getGpioInputPrev() {
+        return gpio_input_prev;
+    }
+
+    public InputAdapter getInputAdapter() {
+        try {
+            return InputAdapter.valueOf(inputAdapter.toUpperCase());
+        } catch (Exception e) {
+            return InputAdapter.SWING;
+        }
     }
 
     public int getLongClickLength() {
