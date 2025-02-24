@@ -125,8 +125,10 @@ public class I2CLcdDisplay extends I2CDevice implements TextDisplay {
      */
     @Override
     public void clearDisplay() {
-        moveCursorHome();
-        sendLcdTwoPartsCommand(LCD_CLEAR_DISPLAY);
+//        moveCursorHome();
+//        sendLcdTwoPartsCommand(LCD_CLEAR_DISPLAY);
+
+        for (int i = 0; i < rows; i++) clearLine(i);
     }
 
     /**
@@ -136,10 +138,10 @@ public class I2CLcdDisplay extends I2CDevice implements TextDisplay {
      */
     @Override
     public void clearLine(int line) {
-        if (line > rows || line < 1) {
+        if (line >= rows || line < 0) {
             throw new IllegalArgumentException("Wrong line id. Only " + rows + " lines possible");
         }
-        displayLine(" ".repeat(columns), LCD_ROW_OFFSETS[line - 1]);
+        displayLine(" ".repeat(columns), LCD_ROW_OFFSETS[line]);
     }
 
     /**

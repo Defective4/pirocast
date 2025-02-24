@@ -75,10 +75,11 @@ public class Pirocast {
     private final InputManager inputManager;
     private int lastNavButtonDirection;
     private long lastNavButtonPress;
+    private long lastUpdated;
     private boolean mediaError;
     private long offLightTime = 0;
-    private float offsetFrequency = 0;
 
+    private float offsetFrequency = 0;
     private final AppProperties properties;
     private String rdsRadiotext, rdsStation;
     private int rdsRadiotextScrollIndex = 0;
@@ -87,6 +88,7 @@ public class Pirocast {
     private int settingIndex = 0;
     private ApplicationState state = OFF;
     private final DateFormat timeFormat, dateFormat;
+
     private final Timer uiTimer = new Timer(true);
 
     public Pirocast(List<Source> bands, AppProperties properties) {
@@ -208,7 +210,7 @@ public class Pirocast {
         switch (properties.getInputAdapter()) {
             case GPIO: {
                 if (ctx == null) ctx = createPiContext();
-                inputManager = new GPIOInputManager(properties.getGpioInputNext(), properties.getGpioInputPrev(),
+                inputManager = new GPIOInputManager(properties.getLongClickLength(), properties.getGpioInputPrev(),
                         properties.getGpioInputOk(), properties.getGpioInputNext(), ctx);
                 break;
             }
@@ -339,7 +341,7 @@ public class Pirocast {
                         if (name.length() - fileScrollIndex < display.getColumns() - 4) fileScrollIndex = 0;
                     }
                 }
-                updateDisplay();
+                updateDisplay(true);
                 if (rdsRadiotext != null) {
                     rdsRadiotextScrollIndex += properties.getRdsScrollSpeed();
                     if (rdsRadiotext.length() - rdsRadiotextScrollIndex < display.getColumns())
@@ -560,14 +562,20 @@ public class Pirocast {
     }
 
     private void updateDisplay() {
+        updateDisplay(false);
+    }
+
+    private void updateDisplay(boolean auto) {
+        if (!auto) {
+            if (System.currentTimeMillis() - lastUpdated < 250) return;
+        } else if (System.currentTimeMillis() - lastUpdated < 900) return;
+        lastUpdated = System.currentTimeMillis();
         switch (state) {
             case ERROR -> {
-                display.clearDisplay();
                 display.centerTextInLine("System", 0);
                 display.centerTextInLine("Error", 1);
             }
             case SETTINGS -> {
-                display.clearDisplay();
                 Setting setting = getCurrentSetting();
                 display.centerTextInLine(setting.getName(), 0);
                 String value;
@@ -579,6 +587,7 @@ public class Pirocast {
                 StringBuilder builder = display.generateCenteredText(value);
                 builder.setCharAt(0, '<');
                 builder.setCharAt(builder.length() - 1, '>');
+                display.centerTextInLine(setting.getName(), 0);
                 display.displayLineOfText(builder.toString(), 1);
             }
             case OFF -> {
@@ -592,7 +601,6 @@ public class Pirocast {
                 display.centerTextInLine(dateFormat.format(now), 1);
             }
             case MAIN -> {
-                display.clearDisplay();
                 SignalMode mode = getCurrentSource().getMode();
                 float freq = getCurrentFrequency();
                 String freqS = freq <= 1e6 ? Double.toString(getCurrentFrequency() / 1e3) + " KHz"

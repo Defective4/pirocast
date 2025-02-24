@@ -67,6 +67,10 @@ public class Main {
             props.load();
 
             Pirocast cast = new Pirocast(sources, props);
+//            cast.start();
+            while (true) {
+                Thread.sleep(1000);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
