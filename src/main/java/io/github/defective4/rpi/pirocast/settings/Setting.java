@@ -13,7 +13,7 @@ public enum Setting {
             null,
             null,
             val -> ((SampleRate) val).getName() + " KHz"),
-    B_STEREO("Stereo", SignalMode.FM, true, null, null, new OnOffSettingFormatter()),
+    B_STEREO("Stereo", SignalMode.FM, false, null, null, new OnOffSettingFormatter()),
     B_TUNING_STEP("Tuning Step", new SignalMode[] {
             SignalMode.AM, SignalMode.NFM
     }, 10, 1, 100, val -> val + " KHz"),

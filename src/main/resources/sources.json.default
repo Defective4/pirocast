@@ -3,7 +3,7 @@
 		{
 			"name": "FM",
 			"mode": "FM",
-			"allowRDS": false,
+			"allowRDS": true,
 			"minFreq": 87000000,
 			"maxFreq": 108000000,
 			"defaultFreq": 88000000
