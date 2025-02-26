@@ -2,7 +2,7 @@ package io.github.defective4.rpi.pirocast;
 
 import static io.github.defective4.rpi.pirocast.ApplicationState.*;
 import static io.github.defective4.rpi.pirocast.SoundEffectsPlayer.*;
-import static io.github.defective4.rpi.pirocast.settings.Setting.A_BEEP;
+import static io.github.defective4.rpi.pirocast.settings.Setting.BEEP;
 
 import java.awt.Window;
 import java.awt.event.KeyEvent;
@@ -114,7 +114,7 @@ public class Pirocast {
             public void trackEnded() {
                 Source src = getCurrentSource();
                 if (src.getMode() == SignalMode.FILE) {
-                    FileManager.Mode mode = (FileManager.Mode) src.getSetting(Setting.G_PLAYER_MODE);
+                    FileManager.Mode mode = (FileManager.Mode) src.getSetting(Setting.PLAYER_MODE);
                     if (mode == Mode.SHUFFLE) {
                         fileManager.nextRandomFile();
                     } else {
@@ -155,7 +155,7 @@ public class Pirocast {
                         tp = flags.hasTP();
                         if (flags.isStereo() != rdsStereo) {
                             rdsStereo = flags.isStereo();
-                            if ((boolean) getCurrentSource().getSetting(Setting.B_STEREO)) {
+                            if ((boolean) getCurrentSource().getSetting(Setting.STEREO)) {
                                 receiver.setStereo(rdsStereo);
                             }
                         }
@@ -399,7 +399,7 @@ public class Pirocast {
 
     public float getTuningStep() {
         Source band = getCurrentSource();
-        return Setting.B_TUNING_STEP.isApplicable(band.getMode()) ? (int) band.getSetting(Setting.B_TUNING_STEP) * 1e3f
+        return Setting.TUNING_STEP.isApplicable(band.getMode()) ? (int) band.getSetting(Setting.TUNING_STEP) * 1e3f
                 : 100e3f;
     }
 
@@ -443,8 +443,7 @@ public class Pirocast {
                 }
                 case AUX -> {
                     try {
-                        auxLoopback
-                                .setSampleRate(((SampleRate) band.getSetting(Setting.B_SAMPLERATE)).getFreq(), false);
+                        auxLoopback.setSampleRate(((SampleRate) band.getSetting(Setting.SAMPLERATE)).getFreq(), false);
                         auxLoopback.start();
                     } catch (Exception e) {
                         raiseMediaError(e);
@@ -460,8 +459,8 @@ public class Pirocast {
                 }
             }
 
-            SoundEffectsPlayer.setEnabled((boolean) band.getSetting(A_BEEP));
-            if (band.getMode() == SignalMode.NFM && (boolean) band.getSetting(Setting.C_APRS)) startAPRS();
+            SoundEffectsPlayer.setEnabled((boolean) band.getSetting(BEEP));
+            if (band.getMode() == SignalMode.NFM && (boolean) band.getSetting(Setting.APRS)) startAPRS();
             aprsResampler.start();
             resetTransientData();
 
@@ -488,10 +487,10 @@ public class Pirocast {
         Source src = getCurrentSource();
         Setting set = getCurrentSetting();
         switch (set) {
-            case C_APRS:
+            case APRS:
                 if (!src.isAPRSAllowed()) settingIndex++;
                 break;
-            case D_RDS:
+            case RDS:
                 if (!src.isRDSAllowed()) settingIndex++;
                 break;
             default:
@@ -524,7 +523,7 @@ public class Pirocast {
         rdsStereo = false;
         aprsQueue.clear();
         aprsScrollIndex = 0;
-        if ((boolean) getCurrentSource().getSetting(Setting.B_STEREO)) receiver.setStereo(false);
+        if ((boolean) getCurrentSource().getSetting(Setting.STEREO)) receiver.setStereo(false);
     }
 
     private void startAPRS() {
@@ -552,7 +551,7 @@ public class Pirocast {
             if (mode.getId() != SignalMode.UNDEFINED_ID)
                 setFrequency(getCurrentFrequency() + getTuningStep() * direction, commit);
             else if (mode == SignalMode.FILE) {
-                if ((FileManager.Mode) src.getSetting(Setting.G_PLAYER_MODE) == Mode.SHUFFLE)
+                if ((FileManager.Mode) src.getSetting(Setting.PLAYER_MODE) == Mode.SHUFFLE)
                     fileManager.nextRandomFile();
                 else fileManager.nextFile(direction);
                 updateDisplay();
@@ -706,8 +705,7 @@ public class Pirocast {
                     case AUX -> {
                         try {
                             auxLoopback
-                                    .setSampleRate(((SampleRate) band.getSetting(Setting.B_SAMPLERATE)).getFreq(),
-                                            false);
+                                    .setSampleRate(((SampleRate) band.getSetting(Setting.SAMPLERATE)).getFreq(), false);
                             auxLoopback.start();
                         } catch (Exception e) {
                             raiseMediaError(e);
@@ -727,12 +725,12 @@ public class Pirocast {
                 }
                 receiver.initDefaultSettings(band);
                 setFrequency(band.getLastFrequency());
-                receiver.setRDS(band.getMode() == SignalMode.FM && (boolean) band.getSetting(Setting.D_RDS));
+                receiver.setRDS(band.getMode() == SignalMode.FM && (boolean) band.getSetting(Setting.RDS));
             }
-            SoundEffectsPlayer.setEnabled((boolean) band.getSetting(A_BEEP));
-            if (band.getMode() == SignalMode.NFM && (boolean) band.getSetting(Setting.C_APRS)) startAPRS();
+            SoundEffectsPlayer.setEnabled((boolean) band.getSetting(BEEP));
+            if (band.getMode() == SignalMode.NFM && (boolean) band.getSetting(Setting.APRS)) startAPRS();
             else stopAPRS();
-            SoundEffectsPlayer.setEnabled((boolean) band.getSetting(Setting.A_BEEP));
+            SoundEffectsPlayer.setEnabled((boolean) band.getSetting(Setting.BEEP));
         } else {
             Source band = getCurrentSource();
             Object currentVal = band.getSetting(set);
@@ -763,7 +761,7 @@ public class Pirocast {
             }
 
             switch (set) {
-                case B_SAMPLERATE -> {
+                case SAMPLERATE -> {
                     try {
                         mediaError = false;
                         auxLoopback.setSampleRate(((SampleRate) band.getSetting(set)).getFreq(), true);
@@ -771,17 +769,17 @@ public class Pirocast {
                         raiseMediaError(e);
                     }
                 }
-                case A_BEEP -> SoundEffectsPlayer.setEnabled((boolean) band.getSetting(set));
-                case E_GAIN -> receiver.setGain((int) band.getSetting(set));
-                case D_RDS -> {
+                case BEEP -> SoundEffectsPlayer.setEnabled((boolean) band.getSetting(set));
+                case GAIN -> receiver.setGain((int) band.getSetting(set));
+                case RDS -> {
                     resetTransientData();
                     receiver.setRDS((boolean) band.getSetting(set));
                 }
-                case F_DEEMP -> receiver.setDeemphasis((int) band.getSetting(set));
-                case B_STEREO -> receiver.setStereo((boolean) band.getSetting(set));
-                case C_APRS -> {
+                case DEEMP -> receiver.setDeemphasis((int) band.getSetting(set));
+                case STEREO -> receiver.setStereo((boolean) band.getSetting(set));
+                case APRS -> {
                     resetTransientData();
-                    if ((boolean) band.getSetting(Setting.C_APRS)) startAPRS();
+                    if ((boolean) band.getSetting(Setting.APRS)) startAPRS();
                     else stopAPRS();
                 }
                 default -> {}

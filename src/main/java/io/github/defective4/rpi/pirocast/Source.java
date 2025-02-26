@@ -61,8 +61,8 @@ public class Source {
     public Object getSetting(Setting setting) {
         Objects.requireNonNull(setting);
         switch (setting) {
-            case D_RDS -> { if (!allowRDS) return false; }
-            case C_APRS -> { if (!allowAPRS) return false; }
+            case RDS -> { if (!allowRDS) return false; }
+            case APRS -> { if (!allowAPRS) return false; }
             default -> {}
         }
         Object val = settings.get(setting);
@@ -91,7 +91,7 @@ public class Source {
     }
 
     private void initDefaults() {
-        for (Setting set : Setting.values()) if (set.isApplicable(mode)) setSetting(set, set.getDefaultValue());
+        for (Setting set : Setting.applicableValues(mode)) setSetting(set, set.getDefaultValue());
     }
 
 }

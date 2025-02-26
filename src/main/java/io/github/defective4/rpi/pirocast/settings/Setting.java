@@ -1,47 +1,48 @@
 package io.github.defective4.rpi.pirocast.settings;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import io.github.defective4.rpi.pirocast.FileManager;
 import io.github.defective4.rpi.pirocast.SignalMode;
 import io.github.defective4.rpi.pirocast.ext.AUXLoopback.SampleRate;
 
 public enum Setting {
-    A_BEEP("Beep", SignalMode.values(), true, null, null, new OnOffSettingFormatter()),
-    B_SAMPLERATE(
-            "Sample Rate",
-            SignalMode.AUX,
-            SampleRate.F44,
-            null,
-            null,
-            val -> ((SampleRate) val).getName() + " KHz"),
-    B_STEREO("Stereo", SignalMode.FM, false, null, null, new OnOffSettingFormatter()),
-    B_TUNING_STEP("Tuning Step", new SignalMode[] {
-            SignalMode.AM, SignalMode.NFM
-    }, 10, 1, 100, val -> val + " KHz"),
-    C_APRS("APRS", SignalMode.NFM, true, null, null, new OnOffSettingFormatter()),
-    D_RDS("RDS", SignalMode.FM, true, null, null, new OnOffSettingFormatter()),
-    E_GAIN("RF Gain", new SignalMode[] {
-            SignalMode.AM, SignalMode.FM, SignalMode.NFM
-    }, 10, 0, 49, null),
-    F_DEEMP("Deemphasis", new SignalMode[] {
+    APRS("APRS", SignalMode.NFM, true, null, null, new OnOffSettingFormatter()),
+    BEEP("Beep", SignalMode.values(), true, null, null, new OnOffSettingFormatter()),
+    DEEMP("Deemphasis", new SignalMode[] {
             SignalMode.FM, SignalMode.NFM
     }, 2, 0, 3, val -> {
         int v = (int) val;
         if (v == 0) return "Off";
         return v * 25 + "u";
     }),
-    G_PLAYER_MODE(
+    GAIN("RF Gain", new SignalMode[] {
+            SignalMode.AM, SignalMode.FM, SignalMode.NFM
+    }, 10, 0, 49, null),
+    PLAYER_MODE(
             "Player mode",
             SignalMode.FILE,
             FileManager.Mode.NONE,
             null,
             null,
             mode -> ((FileManager.Mode) mode).getName()),
-    SOURCE("Source", new SignalMode[0], null, null, null, null);
+    RDS("RDS", SignalMode.FM, true, null, null, new OnOffSettingFormatter()),
+    SAMPLERATE("Sample Rate", SignalMode.AUX, SampleRate.F44, null, null, val -> ((SampleRate) val).getName() + " KHz"),
+    SOURCE("Source", new SignalMode[0], null, null, null, null),
+    STEREO("Stereo", SignalMode.FM, false, null, null, new OnOffSettingFormatter()),
+    TUNING_STEP("Tuning Step", new SignalMode[] {
+            SignalMode.AM, SignalMode.NFM
+    }, 10, 1, 100, val -> val + " KHz");
 
+    private static final Setting[] VALUES = {
+            BEEP, SAMPLERATE, STEREO, TUNING_STEP, APRS, RDS, GAIN, DEEMP, PLAYER_MODE, SOURCE
+    };
     private final SignalMode[] applicableModes;
     private final Object defaultValue;
     private final SettingFormatter formatter;
     private final Object minValue, maxValue;
+
     private final String name;
 
     private Setting(String name, SignalMode applicableMode, Object defaultValue, Object minValue, Object maxValue,
@@ -90,4 +91,9 @@ public enum Setting {
         return false;
     }
 
+    public static Setting[] applicableValues(SignalMode mode) {
+        List<Setting> settings = new ArrayList<>();
+        for (Setting setting : VALUES) if (setting.isApplicable(mode)) settings.add(setting);
+        return settings.toArray(new Setting[0]);
+    }
 }

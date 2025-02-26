@@ -34,10 +34,10 @@ public class RadioReceiver {
 
     public void initDefaultSettings(Source band) {
         setDemodulator(band.getMode());
-        setGain((int) band.getSetting(E_GAIN));
-        setRDS((boolean) band.getSetting(D_RDS));
-        setDeemphasis((int) band.getSetting(F_DEEMP));
-        setStereo((boolean) band.getSetting(B_STEREO));
+        setGain((int) band.getSetting(GAIN));
+        setRDS((boolean) band.getSetting(RDS));
+        setDeemphasis((int) band.getSetting(DEEMP));
+        setStereo((boolean) band.getSetting(STEREO));
     }
 
     public boolean isAlive() {
