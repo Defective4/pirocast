@@ -550,7 +550,7 @@ public class Pirocast {
         if (state == MAIN) {
             Source src = getCurrentSource();
             SignalMode mode = src.getMode();
-            if (mode.getId() != SignalMode.UNDEFINED_ID && !mediaError)
+            if (mode.getId() != SignalMode.UNDEFINED_ID && !mediaError && receiver.isReady())
                 setFrequency(getCurrentFrequency() + getTuningStep() * direction, commit);
             else if (mode == SignalMode.FILE) {
                 if ((FileManager.Mode) src.getSetting(Setting.PLAYER_MODE) == Mode.SHUFFLE)
@@ -613,6 +613,7 @@ public class Pirocast {
                 line2.setCharAt(0, '<');
                 line2.setCharAt(line2.length() - 1, '>');
                 if (mediaError) line2 = display.generateCenteredText("ERROR");
+                else if (!receiver.isReady()) line2 = display.generateCenteredText("Preparing...");
                 StringBuilder line1 = display.generateCenteredText(mode.name());
 
                 switch (mode) {

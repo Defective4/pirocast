@@ -2,8 +2,10 @@ package io.github.defective4.rpi.pirocast.ext;
 
 import static io.github.defective4.rpi.pirocast.settings.Setting.*;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Objects;
 
 import io.github.defective4.rpi.pirocast.SignalMode;
@@ -20,7 +22,9 @@ public class RadioReceiver {
     private final RDSListener rdsListener;
     private final int rdsPort;
     private RDSReceiver rdsReceiver;
-    private Thread rdsThread;
+    private Thread rdsThread, readerThread;
+    private boolean ready;
+
     private final String receiverPath;
 
     public RadioReceiver(int controllerPort, int rdsPort, String receiverPath, RDSListener rdsListener) {
@@ -42,6 +46,10 @@ public class RadioReceiver {
 
     public boolean isAlive() {
         return process != null && process.isAlive();
+    }
+
+    public boolean isReady() {
+        return ready;
     }
 
     public void resetRDS() {
@@ -89,22 +97,47 @@ public class RadioReceiver {
     public void start() throws IOException {
         if (isAlive()) return;
         if (!new File(receiverPath).isFile()) throw new IOException("Receiver file not found");
+        ready = false;
         controller = new RawMessageSender("tcp://0.0.0.0:" + controllerPort, true);
         controller.start();
         process = new ProcessBuilder("python3", receiverPath, "-a", "tcp://localhost:" + controllerPort, "-r",
                 "tcp://localhost:" + rdsPort).start();
+        readerThread = new Thread(() -> {
+            try {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+                while (!Thread.interrupted() && isAlive()) {
+                    String line = reader.readLine();
+                    if (line == null) break;
+                    if ("RECV READY".equals(line)) {
+                        ready = true;
+                    } else {
+                        System.err.println(line);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+        readerThread.start();
     }
 
     public void stop() {
+        ready = false;
         if (controller != null) try {
             controller.close();
             controller = null;
         } catch (Exception e) {
             e.printStackTrace();
         }
+        if (readerThread != null) {
+            readerThread.interrupt();
+            readerThread = null;
+        }
         stopRDS();
-        if (process != null) process.destroyForcibly();
-        process = null;
+        if (process != null) {
+            process.destroyForcibly();
+            process = null;
+        }
     }
 
     private void startRDS() {
