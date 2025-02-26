@@ -15,7 +15,7 @@ public class AppProperties extends Properties {
     protected int controllerPort = 55555;
     protected String dateFormat = "d MMM YY";
     protected String dateTimeLocale = "default";
-    protected String displayAdapter = "swing";
+    protected String displayAdapter = "i2c";
     protected int displayColumns = 16;
     protected int displayRows = 2;
 
@@ -23,7 +23,7 @@ public class AppProperties extends Properties {
     protected int gpio_input_ok = 0;
     protected int gpio_input_prev = 0;
     protected int hardware_displayGuardInterval = 500;
-    protected String inputAdapter = "swing";
+    protected String inputAdapter = "gpio";
 
     protected int rdsPort = 55556;
     protected String receiverExecutablePath = "./src/main/grc/receiver.py";
