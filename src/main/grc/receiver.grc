@@ -420,7 +420,7 @@ blocks:
     bus_structure: null
     coordinate: [544, 288.0]
     rotation: 180
-    state: enabled
+    state: disabled
 - name: blocks_multiply_const_vxx_0
   id: blocks_multiply_const_vxx
   parameters:
@@ -638,7 +638,7 @@ blocks:
     bus_structure: null
     coordinate: [368, 320.0]
     rotation: 180
-    state: enabled
+    state: disabled
 - name: cmd_addr
   id: parameter
   parameters:
@@ -1214,7 +1214,7 @@ blocks:
     bus_structure: null
     coordinate: [8, 172.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: rational_resampler_xxx_1
   id: rational_resampler_xxx
   parameters:

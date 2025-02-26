@@ -67,6 +67,9 @@ public class Main {
 
             props.load();
 
+            LogManager.setLogDir(props.getLoggingDirectory());
+            LogManager.setLogLevel(props.getLogLevel());
+
             Pirocast cast = new Pirocast(sources, props);
 //            cast.start();
             while (true) {

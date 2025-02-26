@@ -10,6 +10,8 @@ import java.lang.reflect.Field;
 import java.util.Locale;
 import java.util.Properties;
 
+import io.github.defective4.rpi.pirocast.LogManager.LogLevel;
+
 public class AppProperties extends Properties {
     protected int aprsResamplerPort = 55557;
     protected int controllerPort = 55555;
@@ -25,15 +27,18 @@ public class AppProperties extends Properties {
     protected int hardware_displayGuardInterval = 500;
     protected String inputAdapter = "gpio";
 
+    protected String logging_directory = "logs";
+    protected String logging_level = "Errors";
     protected int rdsPort = 55556;
     protected String receiverExecutablePath = "./src/main/grc/receiver.py";
+
     protected String timeFormat = "HH:mm:ss";
     protected int ui_aprsScrollSpeed = 1;
-
     protected int ui_fileNameScrollSpeed = 1;
-    protected int ui_longClickLength = 500;
-    protected int ui_rdsScrollSpeed = 1;
 
+    protected int ui_longClickLength = 500;
+
+    protected int ui_rdsScrollSpeed = 1;
     protected int ui_standbyDisplayLinger = 5000;
 
     private final File file;
@@ -107,6 +112,18 @@ public class AppProperties extends Properties {
         }
     }
 
+    public File getLoggingDirectory() {
+        return new File(logging_directory);
+    }
+
+    public LogLevel getLogLevel() {
+        try {
+            return LogLevel.valueOf(logging_level.toUpperCase());
+        } catch (Exception e) {
+            return LogLevel.ERRORS;
+        }
+    }
+
     public int getLongClickLength() {
         return ui_longClickLength;
     }
@@ -142,6 +159,7 @@ public class AppProperties extends Properties {
                     if (val != null) {
                         if (field.getType() == String.class) field.set(this, val);
                         else if (field.getType() == int.class) field.set(this, Integer.parseInt(val));
+                        else if (field.getType() == boolean.class) field.set(this, Boolean.parseBoolean(val));
                     }
                 } catch (Exception e) {}
             }
@@ -154,6 +172,7 @@ public class AppProperties extends Properties {
             Object fVal = field.get(this);
             if (fVal instanceof String str) newVal = str;
             else if (fVal instanceof Integer i) newVal = Integer.toString(i);
+            else if (fVal instanceof Boolean b) newVal = Boolean.toString(b);
             if (newVal != null) setProperty(field.getName().replace('_', '.'), newVal);
         } catch (Exception e) {}
 

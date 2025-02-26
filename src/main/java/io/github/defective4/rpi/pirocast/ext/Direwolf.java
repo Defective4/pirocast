@@ -4,6 +4,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+
+import io.github.defective4.rpi.pirocast.LogManager;
+import io.github.defective4.rpi.pirocast.LogManager.LogLevel;
 
 public class Direwolf {
 
@@ -35,13 +39,17 @@ public class Direwolf {
         kissReady = false;
         agwReady = false;
         try {
-            process = new ProcessBuilder("direwolf", "-c", "/dev/null", "-qhx", "-t", "0", "-a", "0", "-r", "48000",
-                    "-n", "1", "-b", "16", "-").start();
+            ProcessBuilder builder = new ProcessBuilder("direwolf", "-c", "/dev/null", "-qhx", "-t", "0", "-a", "0",
+                    "-r", "48000", "-n", "1", "-b", "16", "-");
+            builder = LogManager.redirectProcess(builder, "direwolf", LogLevel.ERRORS);
+            process = builder.start();
             readerThread = new Thread(() -> {
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                        PrintWriter logWriter = LogManager.prepareLogWriter("direwolf", LogLevel.ALL)) {
                     while (process.isAlive()) {
                         String line = reader.readLine();
                         if (line == null) break;
+                        logWriter.println(line);
                         if (!line.isBlank()) {
                             if (kissReady && agwReady) {
                                 if (!line.startsWith("[")) {

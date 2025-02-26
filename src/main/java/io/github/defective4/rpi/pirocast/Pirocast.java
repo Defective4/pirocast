@@ -342,6 +342,7 @@ public class Pirocast {
                     }
                 } else if (src.getMode().getId() != SignalMode.UNDEFINED_ID && !receiver.isAlive()) {
                     raiseMediaError(null);
+                    receiver.stop();
                 }
                 updateDisplay(true);
                 if (rdsRadiotext != null) {
@@ -457,6 +458,7 @@ public class Pirocast {
                         receiver.initDefaultSettings(band);
                     } catch (Exception e) {
                         raiseMediaError(e);
+                        receiver.stop();
                     }
                 }
             }
@@ -726,6 +728,7 @@ public class Pirocast {
                     receiver.start();
                 } catch (Exception e) {
                     raiseMediaError(e);
+                    receiver.stop();
                     return;
                 }
                 receiver.initDefaultSettings(band);

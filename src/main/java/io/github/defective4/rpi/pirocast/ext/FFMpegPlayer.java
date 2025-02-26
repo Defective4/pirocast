@@ -10,6 +10,9 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
+import io.github.defective4.rpi.pirocast.LogManager;
+import io.github.defective4.rpi.pirocast.LogManager.LogLevel;
+
 public class FFMpegPlayer {
 
     public static interface TrackListener {
@@ -52,7 +55,9 @@ public class FFMpegPlayer {
 
     private void start(String source) throws IOException, UnsupportedAudioFileException, LineUnavailableException {
         if (readerThread != null) return;
-        process = new ProcessBuilder("ffmpeg", "-i", source, "-f", "wav", "-").start();
+        ProcessBuilder builder = new ProcessBuilder("ffmpeg", "-i", source, "-f", "wav", "-");
+        builder = LogManager.redirectProcess(builder, "ffmpeg", LogLevel.ERRORS);
+        process = builder.start();
         AudioInputStream in = AudioSystem.getAudioInputStream(process.getInputStream());
         sdl = AudioSystem.getSourceDataLine(in.getFormat());
         sdl.open();

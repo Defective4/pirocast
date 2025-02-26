@@ -6,8 +6,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.Objects;
 
+import io.github.defective4.rpi.pirocast.LogManager;
+import io.github.defective4.rpi.pirocast.LogManager.LogLevel;
 import io.github.defective4.rpi.pirocast.SignalMode;
 import io.github.defective4.rpi.pirocast.Source;
 import io.github.defective4.sdr.msg.MessagePair;
@@ -103,7 +106,7 @@ public class RadioReceiver {
         process = new ProcessBuilder("python3", receiverPath, "-a", "tcp://localhost:" + controllerPort, "-r",
                 "tcp://localhost:" + rdsPort).start();
         readerThread = new Thread(() -> {
-            try {
+            try (PrintWriter logWriter = LogManager.prepareLogWriter("gnuradio", LogLevel.ERRORS)) {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
                 while (!Thread.interrupted() && isAlive()) {
                     String line = reader.readLine();
@@ -111,7 +114,7 @@ public class RadioReceiver {
                     if ("RECV READY".equals(line)) {
                         ready = true;
                     } else {
-                        System.err.println(line);
+                        logWriter.println(line);
                     }
                 }
             } catch (Exception e) {
