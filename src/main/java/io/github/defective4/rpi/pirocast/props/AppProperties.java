@@ -29,6 +29,7 @@ public class AppProperties extends Properties {
 
     protected String logging_directory = "logs";
     protected String logging_level = "Errors";
+    protected boolean logging_archive = true;
     protected int rdsPort = 55556;
     protected String receiverExecutablePath = "./src/main/grc/receiver.py";
 
@@ -45,6 +46,10 @@ public class AppProperties extends Properties {
 
     public AppProperties(File file) {
         this.file = file;
+    }
+
+    public boolean isLogArchivingEnabled() {
+        return logging_archive;
     }
 
     public int getAprsResamplerPort() {

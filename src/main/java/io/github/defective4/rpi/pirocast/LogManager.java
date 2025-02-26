@@ -5,7 +5,12 @@ import java.io.FileWriter;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Objects;
+import java.util.zip.GZIPOutputStream;
 
 public class LogManager {
 
@@ -25,6 +30,15 @@ public class LogManager {
 
     private static File logDir = new File("logs");
     private static LogLevel logLevel = LogLevel.OFF;
+    private static boolean logArchive;
+
+    public static boolean isLogArchivingEnabled() {
+        return logArchive;
+    }
+
+    public static void setLogArchiving(boolean enabled) {
+        LogManager.logArchive = enabled;
+    }
 
     public static File getLogDir() {
         logDir.mkdirs();
@@ -37,7 +51,7 @@ public class LogManager {
 
     public static PrintWriter prepareLogWriter(String name, LogLevel level) {
         if (logLevel.moreThan(level)) {
-            File target = getFileForName(name, level);
+            File target = prepareFileForName(name, level);
             try {
                 return new PrintWriter(new FileWriter(target, StandardCharsets.UTF_8), true);
             } catch (Exception e) {}
@@ -47,7 +61,7 @@ public class LogManager {
 
     public static ProcessBuilder redirectProcess(ProcessBuilder builder, String name, LogLevel level) {
         if (logLevel.moreThan(level)) {
-            File target = getFileForName(name, level);
+            File target = prepareFileForName(name, level);
             return logLevel == LogLevel.ERRORS ? builder.redirectError(target) : builder.redirectOutput(target);
         }
         return builder;
@@ -63,8 +77,25 @@ public class LogManager {
         LogManager.logLevel = logLevel;
     }
 
-    private static File getFileForName(String name, LogLevel level) {
+    private static File prepareFileForName(String name, LogLevel level) {
         if (level == LogLevel.ERRORS) name += ".error";
-        return new File(getLogDir(), name + ".log");
+        File logFile = new File(getLogDir(), name + ".log");
+        if (logFile.isFile() && logArchive) {
+            long time = System.currentTimeMillis();
+            try {
+                time = Files.readAttributes(logFile.toPath(), BasicFileAttributes.class).lastModifiedTime().toMillis();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            File archiveFile = new File(logFile.getParentFile(),
+                    logFile.getName() + "." + new SimpleDateFormat("yy_MM_dd-HH_mm_ss").format(new Date(time)) + ".gz");
+            try (OutputStream os = new GZIPOutputStream(Files.newOutputStream(archiveFile.toPath()))) {
+                Files.copy(logFile.toPath(), os);
+                logFile.delete();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return logFile;
     }
 }
