@@ -340,6 +340,8 @@ public class Pirocast {
                         fileScrollIndex += properties.getFileNameScrollSpeed();
                         if (name.length() - fileScrollIndex < display.getColumns() - 4) fileScrollIndex = 0;
                     }
+                } else if ((src.getMode().getId() != SignalMode.UNDEFINED_ID) && !receiver.isAlive()) {
+                    raiseMediaError(null);
                 }
                 updateDisplay(true);
                 if (rdsRadiotext != null) {
@@ -507,7 +509,7 @@ public class Pirocast {
     }
 
     private void raiseMediaError(Exception e) {
-        e.printStackTrace();
+        if (e != null) e.printStackTrace();
         mediaError = true;
         updateDisplay();
     }
@@ -548,7 +550,7 @@ public class Pirocast {
         if (state == MAIN) {
             Source src = getCurrentSource();
             SignalMode mode = src.getMode();
-            if (mode.getId() != SignalMode.UNDEFINED_ID)
+            if (mode.getId() != SignalMode.UNDEFINED_ID && !mediaError)
                 setFrequency(getCurrentFrequency() + getTuningStep() * direction, commit);
             else if (mode == SignalMode.FILE) {
                 if ((FileManager.Mode) src.getSetting(Setting.PLAYER_MODE) == Mode.SHUFFLE)

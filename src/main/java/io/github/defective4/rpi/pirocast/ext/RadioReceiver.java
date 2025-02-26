@@ -92,7 +92,7 @@ public class RadioReceiver {
         controller = new RawMessageSender("tcp://0.0.0.0:" + controllerPort, true);
         controller.start();
         process = new ProcessBuilder("python3", receiverPath, "-a", "tcp://localhost:" + controllerPort, "-r",
-                "tcp://localhost:" + rdsPort).redirectError(new File("gnuradio_error.log")).start();
+                "tcp://localhost:" + rdsPort).start();
     }
 
     public void stop() {
