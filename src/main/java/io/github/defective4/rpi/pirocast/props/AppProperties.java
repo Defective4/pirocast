@@ -22,16 +22,18 @@ public class AppProperties extends Properties {
     protected int gpio_input_next = 0;
     protected int gpio_input_ok = 0;
     protected int gpio_input_prev = 0;
+    protected int hardware_displayGuardInterval = 500;
     protected String inputAdapter = "swing";
-    protected int rdsPort = 55556;
 
+    protected int rdsPort = 55556;
     protected String receiverExecutablePath = "./src/main/grc/receiver.py";
     protected String timeFormat = "HH:mm:ss";
     protected int ui_aprsScrollSpeed = 1;
-    protected int ui_fileNameScrollSpeed = 1;
 
+    protected int ui_fileNameScrollSpeed = 1;
     protected int ui_longClickLength = 500;
     protected int ui_rdsScrollSpeed = 1;
+
     protected int ui_standbyDisplayLinger = 5000;
 
     private final File file;
@@ -71,6 +73,10 @@ public class AppProperties extends Properties {
 
     public int getDisplayColumns() {
         return displayColumns;
+    }
+
+    public int getDisplayGuardInterval() {
+        return hardware_displayGuardInterval;
     }
 
     public int getDisplayRows() {

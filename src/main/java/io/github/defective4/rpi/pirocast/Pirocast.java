@@ -340,7 +340,7 @@ public class Pirocast {
                         fileScrollIndex += properties.getFileNameScrollSpeed();
                         if (name.length() - fileScrollIndex < display.getColumns() - 4) fileScrollIndex = 0;
                     }
-                } else if ((src.getMode().getId() != SignalMode.UNDEFINED_ID) && !receiver.isAlive()) {
+                } else if (src.getMode().getId() != SignalMode.UNDEFINED_ID && !receiver.isAlive()) {
                     raiseMediaError(null);
                 }
                 updateDisplay(true);
@@ -567,9 +567,11 @@ public class Pirocast {
     }
 
     private void updateDisplay(boolean auto) {
-        if (!auto) {
-            if (System.currentTimeMillis() - lastUpdated < 250) return;
-        } else if (System.currentTimeMillis() - lastUpdated < 900) return;
+        if (display instanceof I2CLcdDisplay) {
+            if (!auto) {
+                if (System.currentTimeMillis() - lastUpdated < properties.getDisplayGuardInterval()) return;
+            } else if (System.currentTimeMillis() - lastUpdated < 900) return;
+        }
         lastUpdated = System.currentTimeMillis();
         switch (state) {
             case ERROR -> {
