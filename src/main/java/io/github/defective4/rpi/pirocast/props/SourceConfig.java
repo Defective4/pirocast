@@ -1,6 +1,10 @@
 package io.github.defective4.rpi.pirocast.props;
 
+import java.util.Collections;
+import java.util.Map;
+
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import io.github.defective4.rpi.pirocast.SignalMode;
@@ -8,11 +12,12 @@ import io.github.defective4.rpi.pirocast.Source;
 
 public class SourceConfig {
     private final boolean allowAPRS, allowRDS;
+    private final Map<String, JsonElement> defaultSettings;
     private final int minFreq, maxFreq, defaultFreq;
     private final String name, mode, extra;
 
     public SourceConfig(String name, String mode, String extra, boolean allowAPRS, boolean allowRDS, int minFreq,
-            int maxFreq, int defaultFreq) {
+            int maxFreq, int defaultFreq, Map<String, JsonElement> defaultSettings) {
         this.name = name;
         this.mode = mode;
         this.extra = extra;
@@ -21,6 +26,11 @@ public class SourceConfig {
         this.minFreq = minFreq;
         this.maxFreq = maxFreq;
         this.defaultFreq = defaultFreq;
+        this.defaultSettings = defaultSettings;
+    }
+
+    public Map<String, JsonElement> getDefaultSettings() {
+        return Collections.unmodifiableMap(defaultSettings);
     }
 
     public String isValid() {
@@ -43,6 +53,6 @@ public class SourceConfig {
 
     public Source toSource() {
         return new Source(name, SignalMode.valueOf(mode.toUpperCase()), minFreq, maxFreq, defaultFreq, extra, allowRDS,
-                allowAPRS);
+                allowAPRS, defaultSettings);
     }
 }
