@@ -16,6 +16,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import io.github.defective4.rpi.pirocast.props.AppProperties;
+import io.github.defective4.rpi.pirocast.props.SourceConfig;
 
 public class Main {
     public static void main(String[] args) {

@@ -1,7 +1,10 @@
-package io.github.defective4.rpi.pirocast;
+package io.github.defective4.rpi.pirocast.props;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+
+import io.github.defective4.rpi.pirocast.SignalMode;
+import io.github.defective4.rpi.pirocast.Source;
 
 public class SourceConfig {
     private final boolean allowAPRS, allowRDS;
