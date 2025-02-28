@@ -7,4 +7,5 @@ __pycache__
 /pirocast.properties
 /sources.json
 /audio
-/log
+*.log
+/pcsettings.json

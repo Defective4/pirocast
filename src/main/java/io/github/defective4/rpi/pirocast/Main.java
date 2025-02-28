@@ -2,12 +2,16 @@ package io.github.defective4.rpi.pirocast;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -17,6 +21,7 @@ import com.google.gson.JsonParser;
 
 import io.github.defective4.rpi.pirocast.props.AppProperties;
 import io.github.defective4.rpi.pirocast.props.SourceConfig;
+import io.github.defective4.rpi.pirocast.settings.Setting;
 
 public class Main {
     public static void main(String[] args) {
@@ -66,6 +71,45 @@ public class Main {
             }
 
             props.load();
+
+            if (props.persistSettings()) {
+                File settingsFile = new File("pcsettings.json");
+                Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                    try (Writer writer = new FileWriter(settingsFile)) {
+                        JsonObject settings = new JsonObject();
+                        Gson gson = new Gson();
+                        for (Source src : sources) {
+                            JsonObject obj = new JsonObject();
+                            for (Setting set : src.getSettings())
+                                obj.add(set.name(), gson.toJsonTree(src.getSetting(set)));
+                            settings.add(src.getName(), obj);
+                        }
+                        gson.toJson(settings, writer);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }));
+                if (settingsFile.isFile()) {
+                    try (Reader reader = new FileReader(settingsFile)) {
+                        JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
+                        for (Map.Entry<String, JsonElement> entry : root.entrySet())
+                            if (entry.getValue() instanceof JsonObject obj) {
+                                String srcName = entry.getKey();
+                                Source src = null;
+                                for (Source s : sources) if (s.getName().equals(srcName)) {
+                                    src = s;
+                                    break;
+                                }
+                                if (src == null) continue;
+                                Map<String, JsonElement> settings = new HashMap<>();
+                                obj.entrySet().forEach(e -> settings.put(e.getKey(), e.getValue()));
+                                src.initSettings(settings);
+                            }
+                    } catch (Exception e2) {
+                        e2.printStackTrace();
+                    }
+                }
+            }
 
             LogManager.setLogDir(props.getLoggingDirectory());
             LogManager.setLogLevel(props.getLogLevel());

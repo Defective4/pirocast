@@ -34,12 +34,13 @@ public class AppProperties extends Properties {
     protected String receiver_executablePath = "./src/main/grc/receiver.py";
     protected int receiver_rdsPort = 55556;
 
+    protected boolean settings_persist = true;
     protected String time_format = "HH:mm:ss";
     protected int ui_aprsScrollSpeed = 1;
+
     protected int ui_fileNameScrollSpeed = 1;
 
     protected int ui_longClickLength = 500;
-
     protected int ui_rdsScrollSpeed = 1;
     protected int ui_standbyDisplayLinger = 5000;
 
@@ -174,6 +175,10 @@ public class AppProperties extends Properties {
                 } catch (Exception e) {}
             }
         }
+    }
+
+    public boolean persistSettings() {
+        return settings_persist;
     }
 
     public void save() throws IOException {

@@ -32,15 +32,8 @@ public class Source {
         this.allowAPRS = allowAPRS;
         this.allowRDS = allowRDS;
         lastFrequency = defaultFreq;
-        if (defaultSettings != null) for (Map.Entry<String, JsonElement> entry : defaultSettings.entrySet()) {
-            try {
-                Setting set = Setting.valueOf(entry.getKey().toUpperCase().replace(' ', '_'));
-                if (set.isApplicable(mode)) {
-                    this.defaultSettings.put(set, entry.getValue());
-                }
-            } catch (Exception e) {}
-        }
-        initDefaults();
+        if (defaultSettings != null) initSettings(defaultSettings);
+        else initDefaults();
     }
 
     public float getDefaultFreq() {
@@ -86,6 +79,18 @@ public class Source {
         return settings.keySet();
     }
 
+    public void initSettings(Map<String, JsonElement> defaultSettings) {
+        for (Map.Entry<String, JsonElement> entry : defaultSettings.entrySet()) {
+            try {
+                Setting set = Setting.valueOf(entry.getKey().toUpperCase().replace(' ', '_'));
+                if (set.isApplicable(mode)) {
+                    this.defaultSettings.put(set, entry.getValue());
+                }
+            } catch (Exception e) {}
+        }
+        initDefaults();
+    }
+
     public boolean isAPRSAllowed() {
         return allowAPRS;
     }
@@ -104,6 +109,7 @@ public class Source {
     }
 
     private void initDefaults() {
+        settings.clear();
         for (Setting set : Setting.applicableValues(mode)) setSetting(set, set.getDefaultValue());
         for (Map.Entry<Setting, JsonElement> entry : defaultSettings.entrySet()) {
             if (entry.getValue() instanceof JsonPrimitive prim) {
