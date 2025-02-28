@@ -28,17 +28,9 @@ public class LogManager {
         }
     }
 
+    private static boolean logArchive;
     private static File logDir = new File("logs");
     private static LogLevel logLevel = LogLevel.OFF;
-    private static boolean logArchive;
-
-    public static boolean isLogArchivingEnabled() {
-        return logArchive;
-    }
-
-    public static void setLogArchiving(boolean enabled) {
-        LogManager.logArchive = enabled;
-    }
 
     public static File getLogDir() {
         logDir.mkdirs();
@@ -47,6 +39,10 @@ public class LogManager {
 
     public static LogLevel getLogLevel() {
         return logLevel;
+    }
+
+    public static boolean isLogArchivingEnabled() {
+        return logArchive;
     }
 
     public static PrintWriter prepareLogWriter(String name, LogLevel level) {
@@ -65,6 +61,10 @@ public class LogManager {
             return logLevel == LogLevel.ERRORS ? builder.redirectError(target) : builder.redirectOutput(target);
         }
         return builder;
+    }
+
+    public static void setLogArchiving(boolean enabled) {
+        LogManager.logArchive = enabled;
     }
 
     public static void setLogDir(File logDir) {

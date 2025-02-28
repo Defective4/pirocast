@@ -656,6 +656,23 @@ blocks:
     coordinate: [744, 104.0]
     rotation: 0
     state: true
+- name: dev_args
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: Device arguments
+    short_id: s
+    type: str
+    value: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 808.0]
+    rotation: 0
+    state: true
 - name: digital_constellation_receiver_cb_0
   id: digital_constellation_receiver_cb
   parameters:
@@ -895,7 +912,7 @@ blocks:
     ant7: ''
     ant8: ''
     ant9: ''
-    args: '""'
+    args: rtl_args
     bb_gain0: '20'
     bb_gain1: '20'
     bb_gain10: '20'

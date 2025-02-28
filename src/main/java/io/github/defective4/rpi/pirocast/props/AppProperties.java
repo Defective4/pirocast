@@ -13,27 +13,28 @@ import java.util.Properties;
 import io.github.defective4.rpi.pirocast.LogManager.LogLevel;
 
 public class AppProperties extends Properties {
-    protected int aprsResamplerPort = 55557;
-    protected int controllerPort = 55555;
-    protected String dateFormat = "d MMM YY";
-    protected String dateTimeLocale = "default";
-    protected String displayAdapter = "i2c";
-    protected int displayColumns = 16;
-    protected int displayRows = 2;
-
+    protected String date_format = "d MMM YY";
+    protected String date_timeLocale = "default";
+    protected String display_adapter = "i2c";
+    protected int display_columns = 16;
+    protected int display_rows = 2;
     protected int gpio_input_next = 0;
     protected int gpio_input_ok = 0;
     protected int gpio_input_prev = 0;
-    protected int hardware_displayGuardInterval = 500;
-    protected String inputAdapter = "gpio";
 
+    protected int hardware_displayGuardInterval = 500;
+    protected String input_adapter = "gpio";
+    protected boolean logging_archive = true;
     protected String logging_directory = "logs";
     protected String logging_level = "Errors";
-    protected boolean logging_archive = true;
-    protected int rdsPort = 55556;
-    protected String receiverExecutablePath = "./src/main/grc/receiver.py";
 
-    protected String timeFormat = "HH:mm:ss";
+    protected int receiver_aprsResamplerPort = 55557;
+    protected int receiver_controllerPort = 55555;
+    protected String receiver_deviceArguments = "";
+    protected String receiver_executablePath = "./src/main/grc/receiver.py";
+    protected int receiver_rdsPort = 55556;
+
+    protected String time_format = "HH:mm:ss";
     protected int ui_aprsScrollSpeed = 1;
     protected int ui_fileNameScrollSpeed = 1;
 
@@ -48,12 +49,8 @@ public class AppProperties extends Properties {
         this.file = file;
     }
 
-    public boolean isLogArchivingEnabled() {
-        return logging_archive;
-    }
-
     public int getAprsResamplerPort() {
-        return aprsResamplerPort;
+        return receiver_aprsResamplerPort;
     }
 
     public int getAprsScrollSpeed() {
@@ -61,28 +58,32 @@ public class AppProperties extends Properties {
     }
 
     public int getControllerPort() {
-        return controllerPort;
+        return receiver_controllerPort;
     }
 
     public String getDateFormat() {
-        return dateFormat;
+        return date_format;
     }
 
     public Locale getDateTimeLocale() {
-        return "default".equalsIgnoreCase(dateTimeLocale) ? Locale.getDefault(Locale.Category.FORMAT)
-                : new Locale(dateTimeLocale);
+        return "default".equalsIgnoreCase(date_timeLocale) ? Locale.getDefault(Locale.Category.FORMAT)
+                : new Locale(date_timeLocale);
+    }
+
+    public String getDeviceArguments() {
+        return receiver_deviceArguments;
     }
 
     public DisplayAdapter getDisplayAdapter() {
         try {
-            return DisplayAdapter.valueOf(displayAdapter.toUpperCase());
+            return DisplayAdapter.valueOf(display_adapter.toUpperCase());
         } catch (Exception e) {
             return DisplayAdapter.SWING;
         }
     }
 
     public int getDisplayColumns() {
-        return displayColumns;
+        return display_columns;
     }
 
     public int getDisplayGuardInterval() {
@@ -90,7 +91,7 @@ public class AppProperties extends Properties {
     }
 
     public int getDisplayRows() {
-        return displayRows;
+        return display_rows;
     }
 
     public int getFileNameScrollSpeed() {
@@ -111,7 +112,7 @@ public class AppProperties extends Properties {
 
     public InputAdapter getInputAdapter() {
         try {
-            return InputAdapter.valueOf(inputAdapter.toUpperCase());
+            return InputAdapter.valueOf(input_adapter.toUpperCase());
         } catch (Exception e) {
             return InputAdapter.SWING;
         }
@@ -134,7 +135,7 @@ public class AppProperties extends Properties {
     }
 
     public int getRdsPort() {
-        return rdsPort;
+        return receiver_rdsPort;
     }
 
     public int getRdsScrollSpeed() {
@@ -142,7 +143,7 @@ public class AppProperties extends Properties {
     }
 
     public String getReceiverExecutablePath() {
-        return receiverExecutablePath;
+        return receiver_executablePath;
     }
 
     public int getStandbyDisplayLinger() {
@@ -150,7 +151,11 @@ public class AppProperties extends Properties {
     }
 
     public String getTimeFormat() {
-        return timeFormat;
+        return time_format;
+    }
+
+    public boolean isLogArchivingEnabled() {
+        return logging_archive;
     }
 
     public void load() throws IOException {
