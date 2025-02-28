@@ -31,7 +31,7 @@ public class AppProperties extends Properties {
     protected int receiver_aprsResamplerPort = 55557;
     protected int receiver_controllerPort = 55555;
     protected String receiver_deviceArguments = "";
-    protected String receiver_executablePath = "./src/main/grc/receiver.py";
+    protected String receiver_path = "./receiver.py";
     protected int receiver_rdsPort = 55556;
 
     protected boolean settings_persist = true;
@@ -144,7 +144,7 @@ public class AppProperties extends Properties {
     }
 
     public String getReceiverExecutablePath() {
-        return receiver_executablePath;
+        return receiver_path;
     }
 
     public int getStandbyDisplayLinger() {

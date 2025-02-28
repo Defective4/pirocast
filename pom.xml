@@ -44,8 +44,11 @@
 						<phase>compile</phase>
 						<configuration>
 							<executable>grcc</executable>
-							<arguments>receiver.grc</arguments>
-							<workingDirectory>./src/main/grc</workingDirectory>
+							<arguments>
+								<argument>./src/main/grc/receiver.grc</argument>
+								<argument>-o</argument>
+								<argument>target/</argument>
+							</arguments>
 						</configuration>
 					</execution>
 				</executions>
