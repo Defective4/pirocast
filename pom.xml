@@ -36,6 +36,19 @@
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
 				<version>3.5.0</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<phase>compile</phase>
+						<configuration>
+							<executable>grcc</executable>
+							<arguments>receiver.grc</arguments>
+							<workingDirectory>./src/main/grc</workingDirectory>
+						</configuration>
+					</execution>
+				</executions>
 				<configuration>
 					<mainClass>io.github.defective4.rpi.pirocast.Main</mainClass>
 				</configuration>
