@@ -22,7 +22,7 @@ public class AppProperties extends Properties {
     protected int gpio_input_ok = 0;
     protected int gpio_input_prev = 0;
 
-    protected int hardware_displayGuardInterval = 500;
+    protected int hardware_displayGuardInterval = 100;
     protected String input_adapter = "gpio";
     protected boolean logging_archive = true;
     protected String logging_directory = "logs";
