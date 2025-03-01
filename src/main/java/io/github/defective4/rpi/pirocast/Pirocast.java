@@ -132,8 +132,8 @@ public class Pirocast {
                 mediaError = false;
                 if (file != null) {
                     try {
-                        ffmpeg.start(file);
                         filePlayerStartTime = System.currentTimeMillis();
+                        ffmpeg.start(file);
                     } catch (IOException | UnsupportedAudioFileException | LineUnavailableException e) {
                         raiseMediaError(e);
                     }
