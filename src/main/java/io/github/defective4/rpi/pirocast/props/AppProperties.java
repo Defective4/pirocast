@@ -38,10 +38,12 @@ public class AppProperties extends Properties {
     protected String time_format = "HH:mm:ss";
     protected int ui_aprsScrollSpeed = 1;
 
-    protected int ui_fileNameScrollSpeed = 1;
+    protected String ui_audioPlayerTimerStyle = "classic";
 
+    protected int ui_fileNameScrollSpeed = 1;
     protected int ui_longClickLength = 500;
     protected int ui_rdsScrollSpeed = 1;
+
     protected int ui_standbyDisplayLinger = 5000;
 
     private final File file;
@@ -56,6 +58,14 @@ public class AppProperties extends Properties {
 
     public int getAprsScrollSpeed() {
         return ui_aprsScrollSpeed;
+    }
+
+    public TimerStyle getAudioPlayerTimerStyle() {
+        try {
+            return TimerStyle.valueOf(ui_audioPlayerTimerStyle.toUpperCase());
+        } catch (Exception e) {
+            return TimerStyle.CLASSIC;
+        }
     }
 
     public int getControllerPort() {

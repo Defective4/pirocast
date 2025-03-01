@@ -659,13 +659,35 @@ public class Pirocast {
                                                             .min(fileName.length(),
                                                                     fileScrollIndex + display.getColumns() - 2)));
 
-                            long currentDur = System.currentTimeMillis() - filePlayerStartTime;
-                            String seekStr = formatFileTime(currentDur);
-                            String durStr = "??:??";
-                            if (ffmpeg.getLastFileDuration() != -1)
-                                durStr = formatFileTime(ffmpeg.getLastFileDuration());
+                            switch (properties.getAudioPlayerTimerStyle()) {
+                                case TIMER: {
+                                    line2 = display
+                                            .generateCenteredText(
+                                                    formatFileTime(System.currentTimeMillis() - filePlayerStartTime));
+                                    break;
+                                }
+                                case COUNTDOWN: {
+                                    String str = "??:??";
+                                    if (ffmpeg.getLastFileDuration() != -1) {
+                                        long dur = ffmpeg.getLastFileDuration()
+                                                - (System.currentTimeMillis() - filePlayerStartTime);
+                                        str = formatFileTime(dur);
+                                    }
+                                    line2 = display.generateCenteredText(str);
+                                    break;
+                                }
+                                default:
+                                case CLASSIC: {
+                                    long currentDur = System.currentTimeMillis() - filePlayerStartTime;
+                                    String seekStr = formatFileTime(currentDur);
+                                    String durStr = "??:??";
+                                    if (ffmpeg.getLastFileDuration() != -1)
+                                        durStr = formatFileTime(ffmpeg.getLastFileDuration());
 
-                            line2 = display.generateCenteredText(seekStr + " / " + durStr);
+                                    line2 = display.generateCenteredText(seekStr + " / " + durStr);
+                                    break;
+                                }
+                            }
 
                             line2.setCharAt(0, '<');
                             line2.setCharAt(line2.length() - 1, '>');
