@@ -71,14 +71,15 @@ public class Pirocast {
     private final TextDisplay display;
     private final FFMpegPlayer ffmpeg;
     private final FileManager fileManager;
+    private long filePlayerStartTime;
     private int fileScrollIndex = 0;
     private final InputManager inputManager;
     private int lastNavButtonDirection;
     private long lastNavButtonPress;
     private long lastUpdated;
     private boolean mediaError;
-    private long offLightTime = 0;
 
+    private long offLightTime = 0;
     private float offsetFrequency = 0;
     private final AppProperties properties;
     private String rdsRadiotext, rdsStation;
@@ -87,8 +88,8 @@ public class Pirocast {
     private final RadioReceiver receiver;
     private int settingIndex = 0;
     private ApplicationState state = OFF;
-    private final DateFormat timeFormat, dateFormat;
 
+    private final DateFormat timeFormat, dateFormat;
     private final Timer uiTimer = new Timer(true);
 
     public Pirocast(List<Source> bands, AppProperties properties) {
@@ -132,6 +133,7 @@ public class Pirocast {
                 if (file != null) {
                     try {
                         ffmpeg.start(file);
+                        filePlayerStartTime = System.currentTimeMillis();
                     } catch (IOException | UnsupportedAudioFileException | LineUnavailableException e) {
                         raiseMediaError(e);
                     }
@@ -650,12 +652,21 @@ public class Pirocast {
                             String fileName = fileManager.getSelectedFile().getName();
                             int dotIndex = fileName.lastIndexOf('.');
                             if (dotIndex >= 0) fileName = fileName.substring(0, dotIndex);
-                            line2 = display
+                            line1 = display
                                     .generateCenteredText(fileName
                                             .substring(fileScrollIndex,
                                                     Math
                                                             .min(fileName.length(),
-                                                                    fileScrollIndex + display.getColumns() - 4)));
+                                                                    fileScrollIndex + display.getColumns() - 2)));
+
+                            long currentDur = System.currentTimeMillis() - filePlayerStartTime;
+                            String seekStr = formatFileTime(currentDur);
+                            String durStr = "??:??";
+                            if (ffmpeg.getLastFileDuration() != -1)
+                                durStr = formatFileTime(ffmpeg.getLastFileDuration());
+
+                            line2 = display.generateCenteredText(seekStr + " / " + durStr);
+
                             line2.setCharAt(0, '<');
                             line2.setCharAt(line2.length() - 1, '>');
                         } else {
@@ -804,5 +815,18 @@ public class Pirocast {
                 return new String[] {};
             }
         }).add(PiGpioDigitalInputProvider.newInstance(pigpio), LinuxFsI2CProvider.newInstance()).build();
+    }
+
+    private static String formatFileTime(long dur) {
+        int min = (int) Math.floor(dur / 1000 / 60);
+        int sec = (int) Math.floor(dur / 1000) % 60;
+
+        String minStr = Integer.toString(min);
+        String secStr = Integer.toString(sec);
+
+        if (minStr.length() < 2) minStr = "0" + minStr;
+        if (secStr.length() < 2) secStr = "0" + secStr;
+
+        return minStr + ":" + secStr;
     }
 }

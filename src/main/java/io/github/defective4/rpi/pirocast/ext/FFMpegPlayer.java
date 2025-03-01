@@ -1,7 +1,10 @@
 package io.github.defective4.rpi.pirocast.ext;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.URL;
 
 import javax.sound.sampled.AudioInputStream;
@@ -21,13 +24,19 @@ public class FFMpegPlayer {
         void trackEnded();
     }
 
+    private long lastFileDuration;
     private final TrackListener ls;
     private Process process;
-    private Thread readerThread;
+    private Thread readerThread, errorReaderThread;
+
     private SourceDataLine sdl;
 
     public FFMpegPlayer(TrackListener ls) {
         this.ls = ls;
+    }
+
+    public long getLastFileDuration() {
+        return lastFileDuration;
     }
 
     public void start(File file) throws IOException, UnsupportedAudioFileException, LineUnavailableException {
@@ -39,6 +48,7 @@ public class FFMpegPlayer {
     }
 
     public void stop() {
+        lastFileDuration = -1;
         if (process != null) {
             process.destroyForcibly();
             process = null;
@@ -46,6 +56,10 @@ public class FFMpegPlayer {
         if (readerThread != null) {
             readerThread.interrupt();
             readerThread = null;
+        }
+        if (errorReaderThread != null) {
+            errorReaderThread.interrupt();
+            errorReaderThread = null;
         }
         if (sdl != null) {
             sdl.close();
@@ -55,13 +69,12 @@ public class FFMpegPlayer {
 
     private void start(String source) throws IOException, UnsupportedAudioFileException, LineUnavailableException {
         if (readerThread != null) return;
-        ProcessBuilder builder = new ProcessBuilder("ffmpeg", "-i", source, "-f", "wav", "-");
-        builder = LogManager.redirectProcess(builder, "ffmpeg", LogLevel.ERRORS);
-        process = builder.start();
+        process = new ProcessBuilder("ffmpeg", "-i", source, "-f", "wav", "-").start();
         AudioInputStream in = AudioSystem.getAudioInputStream(process.getInputStream());
         sdl = AudioSystem.getSourceDataLine(in.getFormat());
         sdl.open();
         sdl.start();
+        lastFileDuration = -1;
         readerThread = new Thread(() -> {
             try {
                 byte[] buffer = new byte[sdl.getBufferSize()];
@@ -78,6 +91,41 @@ public class FFMpegPlayer {
                 else ls.ffmpegTerminated(code);
             } catch (Exception e) {}
         });
+        errorReaderThread = new Thread(() -> {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+                    PrintWriter logWriter = LogManager.prepareLogWriter("ffmpeg", LogLevel.ERRORS)) {
+                while (true) {
+                    String line = reader.readLine();
+                    if (line == null) break;
+                    if (line.trim().startsWith("Duration: ") && lastFileDuration == -1) {
+                        String durString = line.trim().substring(10);
+                        int index = durString.indexOf(',');
+                        if (index != -1) {
+                            durString = durString.substring(0, index);
+                        }
+                        String[] parts = durString.split(":");
+                        long time = -1;
+                        if (parts.length > 1) {
+                            String partOne = parts[parts.length - 1];
+                            int dotIndex = partOne.indexOf('.');
+                            if (dotIndex != -1) partOne = partOne.substring(0, dotIndex);
+                            int secs = Integer.parseInt(partOne);
+                            int mins = Integer.parseInt(parts[parts.length - 2]);
+                            int hrs = 0;
+                            if (parts.length > 2) hrs = Integer.parseInt(parts[parts.length - 3]);
+                            time = 0;
+                            time += secs * 1000;
+                            time += mins * 1000 * 60;
+                            time += hrs * 1000 * 60 * 60;
+                        }
+                        lastFileDuration = time;
+                    }
+                    logWriter.println(line);
+                }
+            } catch (Exception e) {}
+        });
+        errorReaderThread.start();
         readerThread.start();
     }
+
 }
